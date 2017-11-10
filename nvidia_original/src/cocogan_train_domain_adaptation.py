@@ -87,17 +87,17 @@ def main(argv):
           best_score = score
           trainer.save(config.snapshot_prefix, iterations=-1)
         train_writer.add_summary(summary.scalar('test_b_acc', score), iterations + 1)
-        img_name = image_directory + "/images_a.jpg"
+        img_name = image_directory + "/images_a_" + str(iterations) + ".jpg"
         torchvision.utils.save_image(images_a.data / 2 + 0.5, img_name)
-        img_name = image_directory + "/images_b.jpg"
+        img_name = image_directory + "/images_b_" + str(iterations) + ".jpg"
         torchvision.utils.save_image(images_b.data / 2 + 0.5, img_name)
-        img_name = image_directory + "/x_aa.jpg"
+        img_name = image_directory + "/x_aa_" + str(iterations) + ".jpg"
         torchvision.utils.save_image(x_aa.data / 2 + 0.5, img_name)
-        img_name = image_directory + "/x_ab.jpg"
+        img_name = image_directory + "/x_ab_" + str(iterations) + ".jpg"
         torchvision.utils.save_image(x_ab.data / 2 + 0.5, img_name)
-        img_name = image_directory + "/x_bb.jpg"
+        img_name = image_directory + "/x_bb_" + str(iterations) + ".jpg"
         torchvision.utils.save_image(x_bb.data / 2 + 0.5, img_name)
-        img_name = image_directory + "/x_ba.jpg"
+        img_name = image_directory + "/x_ba_" + str(iterations) + ".jpg"
         torchvision.utils.save_image(x_ba.data / 2 + 0.5, img_name)
 
 
