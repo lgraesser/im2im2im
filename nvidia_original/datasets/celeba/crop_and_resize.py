@@ -10,8 +10,8 @@ from os import listdir
 from os.path import isfile, join
 import cv2
 import numpy as np
-mypath="img_align_celeba"
-myoutpath="img_align_crop_resize_celeba"
+mypath="/Users/lauragraesser/Documents/NYU_Courses/CV/datasets/celeba/img_align_celeba"
+myoutpath="/Users/lauragraesser/Documents/NYU_Courses/CV/datasets/celeba/img_align_128"
 os.mkdir(myoutpath)
 onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
@@ -20,7 +20,5 @@ for f in onlyfiles:
   outfile=join(myoutpath,f)
   img=cv2.imread(infile)
   crop_img=img[20:218-20,:,:]
-  resized_img=cv2.resize(crop_img,dsize=(132,132))
+  resized_img=cv2.resize(crop_img,dsize=(128,128))
   cv2.imwrite(outfile,resized_img)
-
-
