@@ -4,7 +4,7 @@ train:
   snapshot_save_iterations: 100  # How often do you want to save trained models
   image_save_iterations: 500     # How often do you want to save output images during training
   display: 10                    # How often do you want to log the training stats
-  snapshot_prefix: ../outputs/unit/svhn2mnist/svhn2mnist # Where do you want to save the outputs
+  snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/svhn2mnist/ # Where do you want to save the outputs
   hyperparameters:
     trainer: COCOGANDAContextTrainer # CoVAE-GAN for domain adaptation
     gen: CoVAE32x32
@@ -24,12 +24,12 @@ train:
   datasets:
     train_a: # Domain 1 dataset
       class_name: dataset_svhn_extra # dataset class
-      root: ../datasets/svhn/ # dataset root location
+      root: /misc/vlgscratch2/LecunGroup/laura/datasets/svhn/  # dataset root location
     train_b: # Domain 2 dataset
       class_name: dataset_mnist32x32_train # dataset class
-      root: /data/projects/unit_release/datasets/mnist/ # dataset root location
+      root: /misc/vlgscratch2/LecunGroup/laura/datasets/mnist/ # dataset root location
       use_inversion: 1
     test_b: # Domain 1 dataset
       class_name: dataset_mnist32x32_test # dataset class
-      root: ../datasets/mnist/ # dataset root location
+      root: /misc/vlgscratch2/LecunGroup/laura/datasets/mnist/ # dataset root location
       use_inversion: 0
