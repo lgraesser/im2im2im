@@ -4,8 +4,8 @@ Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses
 """
 
 from __future__ import print_function
-# import cPickle
-import _pickle as cPickle
+import cPickle
+#import _pickle as cPickle
 import gzip
 import cv2
 import os
@@ -104,7 +104,7 @@ class dataset_mnist32x32_train_selective(dataset_mnist32x32_train):
       new_labels = []
       assert images.shape[0] == labels.shape[0]
       if labels.ndim != 1:
-          print("Unexpected label shape, exiting)
+          print("Unexpected label shape, exiting")
           print(label.shape)
           exit(0)
       for i in range(len(images.shape[0])):
