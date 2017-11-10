@@ -4,7 +4,8 @@ Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses
 """
 
 from __future__ import print_function
-import cPickle
+# import cPickle
+import _pickle as cPickle
 import gzip
 import cv2
 import os
@@ -45,7 +46,7 @@ class dataset_mnist32x32_train(data.Dataset):
     # images = np.concatenate((images, images, images), axis=1)
     if self.use_inversion == 1:
       images = np.concatenate((images, 1 - images), axis=0)
-      labels = np.concatenate((labels, labels), axis=0)   
+      labels = np.concatenate((labels, labels), axis=0)
     images = (images - 0.5) * 2
     return np.float32(images), labels
 
@@ -80,6 +81,47 @@ class dataset_mnist32x32_train(data.Dataset):
                     [_resize(valid_set[0]), valid_set[1]],
                     [_resize(test_set[0]), test_set[1]]),
                    handle)
+
+class dataset_mnist32x32_train_selective(dataset_mnist32x32_train):
+    def __init__(self, specs):
+        '''includes is a list of digits to include in the dataset'''
+        self.includes = specs['includes']
+        super(dataset_mnist32x32_train_selective, self).__init__(specs)
+
+    def _load_samples(self, full_filepath):
+      f = gzip.open(full_filepath, 'rb')
+      train_set, valid_set, test_set = cPickle.load(f)
+      f.close()
+      images = np.concatenate((train_set[0], valid_set[0]), axis=0)
+      labels = np.concatenate((train_set[1], valid_set[1]), axis=0)
+      print(images.shape)
+      print(labels.shape)
+      '''
+      Select only digits contained in self.includes
+      To check mnist label format
+      '''
+      new_images = []
+      new_labels = []
+      assert images.shape[0] == labels.shape[0]
+      if labels.ndim != 1:
+          print("Unexpected label shape, exiting)
+          print(label.shape)
+          exit(0)
+      for i in range(len(images.shape[0])):
+          if labels[i] in self.includes:
+              new_images.append(images[i])
+              new_labels.append(labels[i])
+      images = np.stack(new_images, axis=0)
+      labels = np.stack(new_labels, axis=0)
+      print(images.shape)
+      print(labels.shape)
+      images = images.reshape((images.shape[0], 1, 32, 32))
+      # images = np.concatenate((images, images, images), axis=1)
+      if self.use_inversion == 1:
+        images = np.concatenate((images, 1 - images), axis=0)
+        labels = np.concatenate((labels, labels), axis=0)
+      images = (images - 0.5) * 2
+      return np.float32(images), labels
 
 class dataset_mnist32x32_test(dataset_mnist32x32_train):
   def __init__(self, specs):
