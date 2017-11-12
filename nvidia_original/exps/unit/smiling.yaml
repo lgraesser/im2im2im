@@ -3,9 +3,9 @@
 train:
   snapshot_save_iterations: 2000 # How often do you want to save trained models
   image_save_iterations: 1000 # How often do you want to save output images during training
-  image_display_iterations: 100
+  image_display_iterations: 1000
   display: 5 # How often do you want to log the training stats
-  snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/eyeglasses # Where do you want to save the outputs
+  snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/smiling/results # Where do you want to save the outputs
   hyperparameters:
     trainer: COCOGANTrainer
     lr: 0.0001             # learning rate
@@ -42,7 +42,7 @@ train:
       class_name: dataset_celeba           # dataset class name
       root: /misc/vlgscratch2/LecunGroup/laura/datasets/celeba/    # dataset folder location
       folder: img_align_64/
-      list_name: lists/eye_noblond_no_brunette.txt
+      list_name: lists/smiling_noblond_no_brunette_20k.txt
     train_b: # Domain 2 dataset
       channels: 3       # image channel number
       scale: 1.0        # scaling factor for scaling image before processing
@@ -50,4 +50,4 @@ train:
       class_name: dataset_celeba           # dataset class name
       root: /misc/vlgscratch2/LecunGroup/laura/datasets/celeba/    # dataset folder location
       folder: img_align_64/
-      list_name: lists/noeye_noblond_no_brunette.txt
+      list_name: lists/nosmiling_noblond_no_brunette_20k.txt

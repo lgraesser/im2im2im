@@ -1,7 +1,7 @@
 # Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
 # Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
 train:
-  snapshot_save_iterations: 100  # How often do you want to save trained models
+  snapshot_save_iterations: 500  # How often do you want to save trained models
   image_save_iterations: 500     # How often do you want to save output images during training
   display: 10                    # How often do you want to log the training stats
   snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/svhn2mnist/ # Where do you want to save the outputs
@@ -18,7 +18,7 @@ train:
     gan_w: 1.0         # weight on the adversarial loss
     batch_size: 64     # image batch size per domain
     test_batch_size: 100
-    max_iterations: 200000 # maximum number of training epochs
+    max_iterations: 50000 # maximum number of training epochs
     input_dim_a: 3
     input_dim_b: 1
   datasets:
