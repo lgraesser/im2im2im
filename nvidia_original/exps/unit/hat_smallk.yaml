@@ -17,7 +17,7 @@ train:
     batch_size: 1          # image batch size per domain
     max_iterations: 100000 # maximum number of training epochs
     gen:
-      name: COCOResGen2
+      name: COCOResGenSmallK
       ch: 64               # base channel number per layer
       input_dim_a: 3
       input_dim_b: 3
@@ -28,7 +28,7 @@ train:
       n_gen_res_blk: 3
       n_gen_front_blk: 3
     dis:
-      name: COCOSharedDis
+      name: COCOSharedDisSmallK
       ch: 64
       input_dim_a: 3
       input_dim_b: 3
