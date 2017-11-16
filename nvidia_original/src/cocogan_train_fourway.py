@@ -34,6 +34,8 @@ def main(argv):
 
   train_loader_a = get_data_loader(config.datasets['train_a'], batch_size)
   train_loader_b = get_data_loader(config.datasets['train_b'], batch_size)
+  train_loader_c = get_data_loader(config.datasets['train_c'], batch_size)
+  train_loader_d = get_data_loader(config.datasets['train_d'], batch_size)
 
   trainer = []
   exec ("trainer=%s(config.hyperparameters)" % config.hyperparameters['trainer'])
@@ -47,23 +49,25 @@ def main(argv):
   print(trainer.dis)
   print("============ GENERATOR ==============")
   print(trainer.gen)
-  
+
   ######################################################################################################################
   # Setup logger and repare image outputs
   train_writer = tensorboard.FileWriter("%s/%s" % (opts.log,os.path.splitext(os.path.basename(opts.config))[0]))
   image_directory, snapshot_directory = prepare_snapshot_and_image_folder(config.snapshot_prefix, iterations, config.image_save_iterations)
 
   for ep in range(0, MAX_EPOCHS):
-    for it, (images_a, images_b) in enumerate(itertools.izip(train_loader_a,train_loader_b)):
-      if images_a.size(0) != batch_size or images_b.size(0) != batch_size:
+    for it, (images_a, images_b, images_c, images_d) in enumerate(itertools.izip(train_loader_a,train_loader_b, train_loader_c, train_loader_d)):
+      if images_a.size(0) != batch_size or images_b.size(0) != batch_size or images_c.size(0) != batch_size or images_d.size(0) != batch_size:
         continue
       images_a = Variable(images_a.cuda(opts.gpu))
       images_b = Variable(images_b.cuda(opts.gpu))
+      images_c = Variable(images_c.cuda(opts.gpu))
+      images_d = Variable(images_d.cuda(opts.gpu))
 
       # Main training code
-      trainer.dis_update(images_a, images_b, config.hyperparameters)
-      image_outputs = trainer.gen_update(images_a, images_b, config.hyperparameters)
-      assembled_images = trainer.assemble_outputs(images_a, images_b, image_outputs)
+      trainer.dis_update(images_a, images_b, images_c, images_d, config.hyperparameters)
+      image_outputs = trainer.gen_update(images_a, images_b, images_c, images_d config.hyperparameters)
+      assembled_images = trainer.assemble_outputs(images_a, images_b, images_c, images_d, image_outputs)
 
       # Dump training stats in log file
       if (iterations+1) % config.display == 0:
@@ -71,11 +75,11 @@ def main(argv):
 
       if (iterations+1) % config.image_save_iterations == 0:
         img_filename = '%s/gen_%08d.jpg' % (image_directory, iterations + 1)
-        torchvision.utils.save_image(assembled_images.data / 2 + 0.5, img_filename, nrow=1)
+        torchvision.utils.save_image(assembled_images.data / 2 + 0.5, img_filename, nrow=2)
         write_html(snapshot_directory + "/index.html", iterations + 1, config.image_save_iterations, image_directory)
       elif (iterations + 1) % config.image_display_iterations == 0:
         img_filename = '%s/gen.jpg' % (image_directory)
-        torchvision.utils.save_image(assembled_images.data / 2 + 0.5, img_filename, nrow=1)
+        torchvision.utils.save_image(assembled_images.data / 2 + 0.5, img_filename, nrow=2)
 
       # Save network weights
       if (iterations+1) % config.snapshot_save_iterations == 0:
