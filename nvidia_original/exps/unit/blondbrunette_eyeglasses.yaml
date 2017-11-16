@@ -21,6 +21,8 @@ train:
       ch: 64               # base channel number per layer
       input_dim_a: 3
       input_dim_b: 3
+      input_dim_c: 3
+      input_dim_d: 3
       n_enc_front_blk: 3
       n_enc_res_blk: 3
       n_enc_shared_blk: 1
@@ -32,6 +34,8 @@ train:
       ch: 64
       input_dim_a: 3
       input_dim_b: 3
+      input_dim_c: 3
+      input_dim_d: 3
       n_front_layer: 2
       n_shared_layer: 4
   datasets:
@@ -66,4 +70,4 @@ train:
       class_name: dataset_celeba           # dataset class name
       root: /misc/vlgscratch2/LecunGroup/laura/datasets/celeba/    # dataset folder location
       folder: img_align_64/
-      list_name: lists/noeyeglasses_10k.txt
+      list_name: lists/noneyeglasses_10k.txt

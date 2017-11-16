@@ -507,7 +507,7 @@ class COCOResGenSmallK4Way(nn.Module):
         encA = []
         encB = []
         encC = []
-        endD = []
+        encD = []
         # Encoders
         encA += [LeakyReLUConv2d(input_dim_a, ch,
                                  kernel_size=3, stride=1, padding=1)]
