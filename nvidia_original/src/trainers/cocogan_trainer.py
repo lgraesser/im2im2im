@@ -421,14 +421,14 @@ class COCOGANTrainer4Way(nn.Module):
         x_cd = self.normalize_image(network_outputs[8])
         x_dd = self.normalize_image(network_outputs[9])
 
-        x_ab_cd = self.gen.forward_c2d(x_ab)
-        x_ab_dc = self.gen.forward_d2c(x_ab)
-        x_ba_cd = self.gen.forward_c2d(x_ba)
-        x_ba_dc = self.gen.forward_d2c(x_ba)
-        x_cd_ab = self.gen.forward_a2b(x_cd)
-        x_cd_ba = self.gen.forward_b2a(x_cd)
-        x_dc_ab = self.gen.forward_a2b(x_dc)
-        x_dc_ba = self.gen.forward_b2a(x_dc)
+        x_ab_cd, _  = self.gen.forward_c2d(x_ab)
+        x_ab_dc, _  = self.gen.forward_d2c(x_ab)
+        x_ba_cd, _  = self.gen.forward_c2d(x_ba)
+        x_ba_dc, _  = self.gen.forward_d2c(x_ba)
+        x_cd_ab, _  = self.gen.forward_a2b(x_cd)
+        x_cd_ba, _  = self.gen.forward_b2a(x_cd)
+        x_dc_ab, _  = self.gen.forward_a2b(x_dc)
+        x_dc_ba, _  = self.gen.forward_b2a(x_dc)
 
         images_a = self.normalize_image(images_a)
         images_b = self.normalize_image(images_b)
@@ -475,3 +475,4 @@ class COCOGANTrainer4Way(nn.Module):
 
     def normalize_image(self, x):
         return x[:, 0:3, :, :]
+
