@@ -118,6 +118,78 @@ class COCOSharedDisSmallK(nn.Module):
         outs_B.append(out_B)
         return outs_A, outs_B
 
+class COCOSharedDisSmallK4Way(nn.Module):
+    def __init__(self, params):
+        super(COCOSharedDisSmallK4Way, self).__init__()
+        ch = params['ch']
+        input_dim_a = params['input_dim_a']
+        input_dim_b = params['input_dim_b']
+        input_dim_c = params['input_dim_c']
+        input_dim_d = params['input_dim_d']
+        n_front_layer = params['n_front_layer']
+        n_shared_layer = params['n_shared_layer']
+        self.model_A, tch = self._make_front_net(
+            ch, input_dim_a, n_front_layer, n_shared_layer == 0)
+        self.model_B, tch = self._make_front_net(
+            ch, input_dim_b, n_front_layer, n_shared_layer == 0)
+        self.model_C, tch = self._make_front_net(
+            ch, input_dim_c, n_front_layer, n_shared_layer == 0)
+        self.model_D, tch = self._make_front_net(
+            ch, input_dim_d, n_front_layer, n_shared_layer == 0)
+        self.model_S = self._make_shared_net(tch, n_shared_layer)
+
+    def _make_front_net(self, ch, input_dim, n_layer, add_classifier_layer=False):
+        model = []
+        model += [LeakyReLUConv2d(input_dim, ch,
+                                  kernel_size=3, stride=2, padding=1)]  # 16
+        tch = ch
+        for i in range(1, n_layer):
+            model += [LeakyReLUConv2d(tch, tch * 2,
+                                      kernel_size=3, stride=2, padding=1)]  # 8
+            tch *= 2
+        if add_classifier_layer:
+            model += [nn.Conv2d(tch, 1, kernel_size=1,
+                                stride=1, padding=0)]  # 1
+        return nn.Sequential(*model), tch
+
+    def _make_shared_net(self, ch, n_layer):
+        model = []
+        if n_layer == 0:
+            return nn.Sequential(*model)
+        tch = ch
+        for i in range(0, n_layer):
+            model += [LeakyReLUConv2d(tch, tch * 2,
+                                      kernel_size=3, stride=2, padding=1)]  # 8
+            tch *= 2
+        model += [nn.Conv2d(tch, 1, kernel_size=1, stride=1, padding=0)]  # 1
+        return nn.Sequential(*model)
+
+    def cuda(self, gpu):
+        self.model_A.cuda(gpu)
+        self.model_B.cuda(gpu)
+        self.model_C.cuda(gpu)
+        self.model_D.cuda(gpu)
+        self.model_S.cuda(gpu)
+
+    def forward(self, x_A, x_B, x_C, x_D):
+        out_A = self.model_S(self.model_A(x_A))
+        out_A = out_A.view(-1)
+        outs_A = []
+        outs_A.append(out_A)
+        out_B = self.model_S(self.model_B(x_B))
+        out_B = out_B.view(-1)
+        outs_B = []
+        outs_B.append(out_B)
+        out_C = self.model_S(self.model_C(x_C))
+        out_C = out_C.view(-1)
+        outs_C = []
+        outs_C.append(out_C)
+        out_D = self.model_S(self.model_D(x_D))
+        out_D = out_D.view(-1)
+        outs_D = []
+        outs_D.append(out_D)
+        return outs_A, outs_B, outs_C, outs_D
+
 
 class COCODis(nn.Module):
     def __init__(self, params):
