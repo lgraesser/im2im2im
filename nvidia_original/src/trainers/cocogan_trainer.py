@@ -410,6 +410,46 @@ class COCOGANTrainer4Way(nn.Module):
                 images_c[0:1, ::], x_cc[0:1, ::], x_cd[0:1, ::], x_cdc[0:1, ::],
                 images_d[0:1, ::], x_dd[0:1, ::], x_dc[0:1, ::], x_dcd[0:1, ::]), 3)
 
+    def assemble_double_loop_outputs(self, images_a, images_b, images_c, images_d, network_outputs):
+        # Normalize before feeding back through model?
+        x_aa = self.normalize_image(network_outputs[0])
+        x_ba = self.normalize_image(network_outputs[1])
+        x_ab = self.normalize_image(network_outputs[2])
+        x_bb = self.normalize_image(network_outputs[3])
+        x_cc = self.normalize_image(network_outputs[6])
+        x_dc = self.normalize_image(network_outputs[7])
+        x_cd = self.normalize_image(network_outputs[8])
+        x_dd = self.normalize_image(network_outputs[9])
+
+        x_ab_cd = self.gen.forward_c2d(x_ab)
+        x_ab_dc = self.gen.forward_d2c(x_ab)
+        x_ba_cd = self.gen.forward_c2d(x_ba)
+        x_ba_dc = self.gen.forward_d2c(x_ba)
+        x_cd_ab = self.gen.forward_a2b(x_cd)
+        x_cd_ba = self.gen.forward_b2a(x_cd)
+        x_dc_ab = self.gen.forward_a2b(x_dc)
+        x_dc_ba = self.gen.forward_b2a(x_dc)
+
+        images_a = self.normalize_image(images_a)
+        images_b = self.normalize_image(images_b)
+        images_c = self.normalize_image(images_c)
+        images_d = self.normalize_image(images_d)
+        x_ab_cd = self.normalize_image(x_ab_cd)
+        x_ab_dc = self.normalize_image(x_ab_dc)
+        x_ba_cd = self.normalize_image(x_ba_cd)
+        x_ba_dc = self.normalize_image(x_ba_dc)
+        x_cd_ab = self.normalize_image(x_cd_ab)
+        x_cd_ba = self.normalize_image(x_cd_ba)
+        x_dc_ab = self.normalize_image(x_dc_ab)
+        x_dc_ba = self.normalize_image(x_dc_ba)
+
+        return torch.cat((
+                images_a[0:1, ::], x_ab[0:1, ::], x_ab_cd[0:1, ::], x_ab_dc[0:1, ::],
+                images_b[0:1, ::], x_ba[0:1, ::], x_ba_cd[0:1, ::], x_ba_dc[0:1, ::],
+                images_c[0:1, ::], x_cd[0:1, ::], x_cd_ab[0:1, ::], x_cd_ba[0:1, ::],
+                images_d[0:1, ::], x_dc[0:1, ::], x_dc_ab[0:1, ::], x_dc_ba[0:1, ::]
+                ), 3)
+
     def resume(self, snapshot_prefix):
         dirname = os.path.dirname(snapshot_prefix)
         last_model_name = get_model_list(dirname, "gen")

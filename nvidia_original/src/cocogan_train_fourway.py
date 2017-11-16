@@ -68,6 +68,7 @@ def main(argv):
       trainer.dis_update(images_a, images_b, images_c, images_d, config.hyperparameters)
       image_outputs = trainer.gen_update(images_a, images_b, images_c, images_d, config.hyperparameters)
       assembled_images = trainer.assemble_outputs(images_a, images_b, images_c, images_d, image_outputs)
+      assembled_dbl_loop_images = trainer.assemble_double_loop_outputs(images_a, images_b, images_c, images_d, image_outputs)
 
       # Dump training stats in log file
       if (iterations+1) % config.display == 0:
@@ -76,10 +77,14 @@ def main(argv):
       if (iterations+1) % config.image_save_iterations == 0:
         img_filename = '%s/gen_%08d.jpg' % (image_directory, iterations + 1)
         torchvision.utils.save_image(assembled_images.data / 2 + 0.5, img_filename, nrow=2)
+        dbl_img_filename = '%s/gen_dbl_%08d.jpg' % (image_directory, iterations + 1)
+        torchvision.utils.save_image(assembled_dbl_loop_images.data / 2 + 0.5, dbl_img_filename, nrow=2)
         write_html(snapshot_directory + "/index.html", iterations + 1, config.image_save_iterations, image_directory)
       elif (iterations + 1) % config.image_display_iterations == 0:
         img_filename = '%s/gen.jpg' % (image_directory)
         torchvision.utils.save_image(assembled_images.data / 2 + 0.5, img_filename, nrow=2)
+        dbl_img_filename = '%s/gen_dbl.jpg' % (image_directory)
+        torchvision.utils.save_image(assembled_dbl_loop_images.data / 2 + 0.5, dbl_img_filename, nrow=2)
 
       # Save network weights
       if (iterations+1) % config.snapshot_save_iterations == 0:
