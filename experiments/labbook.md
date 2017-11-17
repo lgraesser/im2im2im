@@ -19,10 +19,12 @@
 - 16 November: First two experiments jointly training two pairs of distributions in the same model. Surprisingly this seems to be working.
   - Two four way pairs were tried: blond, brunette, smiling, not smiling, and blond, brunette, eyeglasses, no Eyeglasses
   - The models were trained jointly from scratch, but the model was only trained to generate / discriminate between each pair (marginal distribution) separately. At evaluation, the double cycle way tested
+  - One general issues is that one translation out of four fails: Adding eyeglasses and adding a smile. Perhaps the larger resolution image will fix this, if not then we may need to tweak the loss function to up the weight on this pair of translations.
+  - The double weight on the shared loss may also be a problem
   - Blond - brunette, smiling - not smiling works best.
-    - This experiment also shows some nice characteristics of both generating elements. Generation seems to be a little like, "add more smile", or "make hair darker" rather than "make brunette", or "make smiling". For half smiles, cycling the images through smiling - no smiling decreases the smile, whilst cycling the images through no smiling to smiling increases the smile. Similarly for light brown hair.
+    - This experiment also shows some nice characteristics of both generating elements. Generation seems to be a little like, "add more smile", or "make hair darker" rather than "make brunette". For light brown hair, cycling through the model from brown to blond makes the hair lighter, and cycling through from blond to brown makes the hair darker.
     - No change is made to images with large smiles (which makes sense, and is reassuring, since it suggests the generation process can generate the identify function).
-    - Overall it seems as if the model has learnt a pretty good concept of hair color and smiling-ness
+    - Overall it seems as if the model has learnt a pretty good concept of hair color
   - Removing eyeglasses and then translating the hair color works pretty well, but the mode of adding eyeglasses then changing the hair color seems to be lost. This could be because there are no eyeglasses in the blond brunette dataset (which would be problematic since the model should ignore what is on the eyes), but at the moment seems to be a failure of the no eyeglasses - eyeglasses generation. Perhaps this loss could be tweaked to try and boost this part of the network.
 - 17 November: Training the same two joint models as above at higher res 128 x 128
 
