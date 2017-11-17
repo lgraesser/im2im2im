@@ -26,15 +26,13 @@
   - Removing eyeglasses and then translating the hair color works pretty well, but the mode of adding eyeglasses then changing the hair color seems to be lost. This could be because there are no eyeglasses in the blond brunette dataset (which would be problematic since the model should ignore what is on the eyes), but at the moment seems to be a failure of the no eyeglasses - eyeglasses generation. Perhaps this loss could be tweaked to try and boost this part of the network.
 
 
-
-
 ### Todo
 
-[x] Smiling / not smiling with out of the box settings
-[x] Male / female with out of the box settings
-[x] Try reduce the kernel size and / or padding of the network.
-[] Train higher resolution (128 * 128) models
-[] Try the double loop on separately trained models
-[] Try warm starting the models
-[] Compared the difference between 1. separately trained models, 2. jointly trained from scratch, and 3. Warm started with a separately trained model. Hold number of iterations and dataset constant.
-[] Tweak no eyeglasses --> eyeglasses loss to improve eyeglasses generation in four way model
+- [x] Smiling / not smiling with out of the box settings
+- [x] Male / female with out of the box settings
+- [x] Try reduce the kernel size and / or padding of the network.
+- [ ] Train higher resolution (128 * 128) models
+- [ ] Try the double loop on separately trained models
+- [ ] Try warm starting the models
+- [ ] Compared the difference between 1. separately trained models, 2. jointly trained from scratch, and 3. Warm started with a separately trained model. Hold number of iterations and dataset constant.
+- [ ] Tweak no eyeglasses --> eyeglasses loss to improve eyeglasses generation in four way model
