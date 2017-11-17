@@ -24,7 +24,7 @@
     - No change is made to images with large smiles (which makes sense, and is reassuring, since it suggests the generation process can generate the identify function).
     - Overall it seems as if the model has learnt a pretty good concept of hair color and smiling-ness
   - Removing eyeglasses and then translating the hair color works pretty well, but the mode of adding eyeglasses then changing the hair color seems to be lost. This could be because there are no eyeglasses in the blond brunette dataset (which would be problematic since the model should ignore what is on the eyes), but at the moment seems to be a failure of the no eyeglasses - eyeglasses generation. Perhaps this loss could be tweaked to try and boost this part of the network.
-
+- 17 November: Training the same two joint models as above at higher res 128 x 128
 
 ### Todo
 
@@ -33,6 +33,7 @@
 - [x] Try reduce the kernel size and / or padding of the network.
 - [ ] Train higher resolution (128 * 128) models
 - [ ] Try the double loop on separately trained models
+- [ ] Code to initialize model weights from separately trained models
 - [ ] Try warm starting the models
 - [ ] Compared the difference between 1. separately trained models, 2. jointly trained from scratch, and 3. Warm started with a separately trained model. Hold number of iterations and dataset constant.
 - [ ] Tweak no eyeglasses --> eyeglasses loss to improve eyeglasses generation in four way model
