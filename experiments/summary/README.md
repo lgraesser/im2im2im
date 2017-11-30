@@ -19,7 +19,13 @@
     - Smiling - not smiling: trained for 172k iterations (harder distribution to learn)
     - Small initial kernel: 3 x 3, padding 1
 
-### Obersevations
+
+### Images Key
+  - \*jt.jpg = model 1
+  - \*st.jpg = model 2
+  - \*.jpg = model 3
+
+### Observations
   - Smiling to not smiling seems easier for brunette distribution: it is possible that this is a biased dataset and it is not possible to exclude mouths whilst training
   - Mode drop in model 1. Not smiling - smiling fails. This is resolved with the warm start for model 3. It is also possible that the kernel size was too big (but that wouldn't explain smiling to not smiling working)
   - Warm start produces the best results, irons out more extreme translations. This makes sense given the two pair wise models don't share a latent space. Clear improvement from 1 --> 2 --> 3e
