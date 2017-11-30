@@ -44,7 +44,7 @@ def main(argv):
     print("============ GENERATOR AB ==============")
     print(gen_ab)
     print("============ GENERATOR CD ==============")
-    print(gen_bc)
+    print(gen_cd)
     dirname = os.path.dirname(snapshot_prefix)
     model_path = os.path.join(dirname, opts.gen_ab)
     gen_ab.load_state_dict(torch.load(model_path))
