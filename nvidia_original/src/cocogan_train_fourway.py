@@ -69,7 +69,9 @@ def main(argv):
       image_outputs = trainer.gen_update(images_a, images_b, images_c, images_d, config.hyperparameters)
       assembled_images = trainer.assemble_outputs(images_a, images_b, images_c, images_d, image_outputs)
       assembled_dbl_loop_images = trainer.assemble_double_loop_outputs(images_a, images_b, images_c, images_d, image_outputs)
-
+      #print(assembled_images.data.shape)
+      #print(assembled_dbl_loop_images.data.shape)
+      
       # Dump training stats in log file
       if (iterations+1) % config.display == 0:
         write_loss(iterations, max_iterations, trainer, train_writer)
