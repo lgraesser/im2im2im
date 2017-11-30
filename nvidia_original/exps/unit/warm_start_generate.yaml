@@ -4,8 +4,15 @@ train:
   snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/warm_start_generate/results # Where do you want to save the outputs
   image_save_iterations: 10
   hyperparameters:
-    batch_size: 1
-    trainer:
+    trainer: COCOGANTrainer4Way
+    lr: 0.0001             # learning rate
+    ll_direct_link_w: 100  # weight on the self L1 reconstruction loss
+    kl_direct_link_w: 0.1 # weight on VAE encoding loss
+    ll_cycle_link_w: 100   # weight on the cycle L1 reconstruction loss
+    kl_cycle_link_w: 0.1  # weight on the cycle L1 reconstruction loss
+    gan_w: 10              # weight on the adversarial loss
+    batch_size: 1          # image batch size per domain
+    max_iterations: 100000 # maximum number of training epochs
     gen:
       name: COCOResGenSmallK4Way
       ch: 64               # base channel number per layer
