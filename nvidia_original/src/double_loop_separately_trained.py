@@ -37,10 +37,10 @@ def main(argv):
 
     batch_size = config.hyperparameters['batch_size']
 
-    train_loader_a = get_data_loader(config.datasets['train_a'], batch_size, shuffle=False)
-    train_loader_b = get_data_loader(config.datasets['train_b'], batch_size, shuffle=False)
-    train_loader_c = get_data_loader(config.datasets['train_c'], batch_size, shuffle=False)
-    train_loader_d = get_data_loader(config.datasets['train_d'], batch_size, shuffle=False)
+    train_loader_a = get_data_loader(config.datasets['train_a'], batch_size, shuffle=False, num_workers=1)
+    train_loader_b = get_data_loader(config.datasets['train_b'], batch_size, shuffle=False, num_workers=1)
+    train_loader_c = get_data_loader(config.datasets['train_c'], batch_size, shuffle=False, num_workers=1)
+    train_loader_d = get_data_loader(config.datasets['train_d'], batch_size, shuffle=False, num_workers=1)
 
     gen_ab = None
     gen_cd = None
