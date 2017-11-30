@@ -20,6 +20,8 @@ parser.add_option('--config', type=str, help="net configuration")
 parser.add_option('--gen_ab', type=str, help="generator ab")
 parser.add_option('--gen_cd', type=str, help="generator cd")
 
+def normalize_image(x):
+  return x[:, 0:3, :, :]
 
 def main(argv):
     (opts, args) = parser.parse_args(argv)
@@ -52,7 +54,8 @@ def main(argv):
     model_path = os.path.join(dirname, opts.gen_cd)
     gen_cd.load_state_dict(torch.load(model_path))
     print("Pre trained generator cd loaded")
-
+    gen_ab.cuda(opts.gpu)
+    gen_cd.cuda(opts.gpu)
     it = 0
     image_directory, snapshot_directory = prepare_snapshot_and_image_folder(config.snapshot_prefix, it, config.image_save_iterations)
 
@@ -72,7 +75,7 @@ def main(argv):
 
         gen_cd.eval()
         x_cc, x_dc, x_cd, x_dd, _ = gen_cd(images_c, images_d)
-        x_dcd, _ = gen_cd.forward_a2b(x_cd)
+        x_dcd, _ = gen_cd.forward_a2b(x_dc)
         x_cdc, _ = gen_cd.forward_b2a(x_cd)
 
         # Double loop pass
@@ -88,22 +91,22 @@ def main(argv):
 
         # Assemble images
         # Single loop
-        images_a = self.normalize_image(images_a)
-        images_b = self.normalize_image(images_b)
-        images_c = self.normalize_image(images_c)
-        images_d = self.normalize_image(images_d)
-        x_aa = self.normalize_image(x_aa)
-        x_ba = self.normalize_image(x_ba)
-        x_ab = self.normalize_image(x_ab)
-        x_bb = self.normalize_image(x_bb)
-        x_aba = self.normalize_image(x_aba)
-        x_bab = self.normalize_image(x_bab)
-        x_cc = self.normalize_image(x_cc)
-        x_dc = self.normalize_image(x_dc)
-        x_cd = self.normalize_image(x_cd)
-        x_dd = self.normalize_image(x_dd)
-        x_cdc = self.normalize_image(x_cdc)
-        x_dcd = self.normalize_image(x_dcd)
+        images_a = normalize_image(images_a)
+        images_b = normalize_image(images_b)
+        images_c = normalize_image(images_c)
+        images_d = normalize_image(images_d)
+        x_aa = normalize_image(x_aa)
+        x_ba = normalize_image(x_ba)
+        x_ab = normalize_image(x_ab)
+        x_bb = normalize_image(x_bb)
+        x_aba = normalize_image(x_aba)
+        x_bab = normalize_image(x_bab)
+        x_cc = normalize_image(x_cc)
+        x_dc = normalize_image(x_dc)
+        x_cd = normalize_image(x_cd)
+        x_dd = normalize_image(x_dd)
+        x_cdc = normalize_image(x_cdc)
+        x_dcd = normalize_image(x_dcd)
         assembled_images =  torch.cat((
                 images_a[0:1, ::], x_aa[0:1, ::], x_ab[0:1, ::], x_aba[0:1, ::],
                 images_b[0:1, ::], x_bb[0:1, ::], x_ba[0:1, ::], x_bab[0:1, ::],
@@ -111,14 +114,14 @@ def main(argv):
                 images_d[0:1, ::], x_dd[0:1, ::], x_dc[0:1, ::], x_dcd[0:1, ::]), 3)
 
         # double loop
-        x_ab_cd = self.normalize_image(x_ab_cd)
-        x_ab_dc = self.normalize_image(x_ab_dc)
-        x_ba_cd = self.normalize_image(x_ba_cd)
-        x_ba_dc = self.normalize_image(x_ba_dc)
-        x_cd_ab = self.normalize_image(x_cd_ab)
-        x_cd_ba = self.normalize_image(x_cd_ba)
-        x_dc_ab = self.normalize_image(x_dc_ab)
-        x_dc_ba = self.normalize_image(x_dc_ba)
+        x_ab_cd = normalize_image(x_ab_cd)
+        x_ab_dc = normalize_image(x_ab_dc)
+        x_ba_cd = normalize_image(x_ba_cd)
+        x_ba_dc = normalize_image(x_ba_dc)
+        x_cd_ab = normalize_image(x_cd_ab)
+        x_cd_ba = normalize_image(x_cd_ba)
+        x_dc_ab = normalize_image(x_dc_ab)
+        x_dc_ba = normalize_image(x_dc_ba)
         assembled_dbl_loop_images =  torch.cat((
                 images_a[0:1, ::], x_ab[0:1, ::], x_ab_cd[0:1, ::], x_ab_dc[0:1, ::],
                 images_b[0:1, ::], x_ba[0:1, ::], x_ba_cd[0:1, ::], x_ba_dc[0:1, ::],
@@ -136,6 +139,7 @@ def main(argv):
                 image_directory, it + 1)
             torchvision.utils.save_image(
                 assembled_dbl_loop_images.data / 2 + 0.5, dbl_img_filename, nrow=2)
-
+        if (it + 1) % 10 == 0:
+          print("Iteration: {}".format(it + 1))
 if __name__ == '__main__':
     main(sys.argv)
