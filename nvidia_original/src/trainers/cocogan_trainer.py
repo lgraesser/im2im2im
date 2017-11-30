@@ -476,3 +476,191 @@ class COCOGANTrainer4Way(nn.Module):
     def normalize_image(self, x):
         return x[:, 0:3, :, :]
 
+
+class COCOGANTrainer4WayLrTweak(COCOGANTrainer4Way):
+
+    def __init__(self, hyperparameters):
+        super(COCOGANTrainer4Way, self).__init__(hyperparameters)
+
+    def gen_update(self, images_a, images_b, images_c, images_d, hyperparameters):
+        self.gen.zero_grad()
+        x_aa, x_ba, x_ab, x_bb, x_cc, x_dc, x_cd, x_dd, shared = \
+            self.gen(images_a, images_b, images_c, images_d)
+        x_bab, shared_bab = self.gen.forward_a2b(x_ba)
+        x_aba, shared_aba = self.gen.forward_b2a(x_ab)
+        x_dcd, shared_dcd = self.gen.forward_c2d(x_dc)
+        x_cdc, shared_cdc = self.gen.forward_d2c(x_cd)
+        outs_a, outs_b, outs_c, outs_d = self.dis(x_ba, x_ab, x_dc, x_cd)
+
+        # Loss for first pair (A, B)
+        for it, (out_a, out_b) in enumerate(itertools.izip(outs_a, outs_b)):
+            outputs_a = nn.functional.sigmoid(out_a)
+            outputs_b = nn.functional.sigmoid(out_b)
+            all_ones = Variable(torch.ones((outputs_a.size(0))).cuda(self.gpu))
+            if it == 0:
+                ad_loss_a = nn.functional.binary_cross_entropy(
+                    outputs_a, all_ones)
+                ad_loss_b = nn.functional.binary_cross_entropy(
+                    outputs_b, all_ones)
+            else:
+                ad_loss_a += nn.functional.binary_cross_entropy(
+                    outputs_a, all_ones)
+                ad_loss_b += nn.functional.binary_cross_entropy(
+                    outputs_b, all_ones)
+
+        enc_loss = self._compute_kl(shared)
+        enc_bab_loss = self._compute_kl(shared_bab)
+        enc_aba_loss = self._compute_kl(shared_aba)
+        ll_loss_a = self.ll_loss_criterion_a(x_aa, images_a)
+        ll_loss_b = self.ll_loss_criterion_b(x_bb, images_b)
+        ll_loss_aba = self.ll_loss_criterion_a(x_aba, images_a)
+        ll_loss_bab = self.ll_loss_criterion_b(x_bab, images_b)
+
+        # Loss for second pair (C, D)
+        for it, (out_c, out_d) in enumerate(itertools.izip(outs_c, outs_d)):
+            outputs_c = nn.functional.sigmoid(out_c)
+            outputs_d = nn.functional.sigmoid(out_d)
+            all_ones = Variable(torch.ones((outputs_c.size(0))).cuda(self.gpu))
+            if it == 0:
+                ad_loss_c = nn.functional.binary_cross_entropy(
+                    outputs_c, all_ones)
+                ad_loss_d = nn.functional.binary_cross_entropy(
+                    outputs_d, all_ones)
+            else:
+                ad_loss_c += nn.functional.binary_cross_entropy(
+                    outputs_c, all_ones)
+                ad_loss_d += nn.functional.binary_cross_entropy(
+                    outputs_d, all_ones)
+
+        # Only need the shared loss once
+        # enc_loss = self._compute_kl(shared)
+        enc_dcd_loss = self._compute_kl(shared_dcd)
+        enc_cdc_loss = self._compute_kl(shared_cdc)
+        ll_loss_c = self.ll_loss_criterion_c(x_cc, images_c)
+        ll_loss_d = self.ll_loss_criterion_d(x_dd, images_d)
+        ll_loss_cdc = self.ll_loss_criterion_c(x_cdc, images_c)
+        ll_loss_dcd = self.ll_loss_criterion_d(x_dcd, images_d)
+
+        # Contribution from (A, B)
+        total_loss = hyperparameters['gan_w'] * (ad_loss_a + ad_loss_b) + \
+            hyperparameters['ll_direct_link_w'] * (ll_loss_a + ll_loss_b) + \
+            hyperparameters['ll_cycle_link_w'] * (ll_loss_aba + ll_loss_bab) + \
+            hyperparameters['kl_direct_link_w'] * (enc_loss + enc_loss) + \
+            hyperparameters['kl_cycle_link_w'] * (enc_bab_loss + enc_aba_loss)
+
+        # Contribution from (C, D)
+        total_loss += 1.5 * hyperparameters['gan_w'] * (ad_loss_c + ad_loss_d) + \
+            hyperparameters['ll_direct_link_w'] * (ll_loss_c + ll_loss_d) + \
+            hyperparameters['ll_cycle_link_w'] * (ll_loss_cdc + ll_loss_dcd) + \
+            hyperparameters['kl_direct_link_w'] * (enc_loss + enc_loss) + \
+            hyperparameters['kl_cycle_link_w'] * (enc_dcd_loss + enc_cdc_loss)
+
+        total_loss.backward()
+        self.gen_opt.step()
+
+        # Combined loss
+        self.gen_enc_loss = enc_loss.data.cpu().numpy()[0]
+        self.gen_total_loss = total_loss.data.cpu().numpy()[0]
+
+        # Losses from (A, B)
+        self.gen_enc_bab_loss = enc_bab_loss.data.cpu().numpy()[0]
+        self.gen_enc_aba_loss = enc_aba_loss.data.cpu().numpy()[0]
+        self.gen_ad_loss_a = ad_loss_a.data.cpu().numpy()[0]
+        self.gen_ad_loss_b = ad_loss_b.data.cpu().numpy()[0]
+        self.gen_ll_loss_a = ll_loss_a.data.cpu().numpy()[0]
+        self.gen_ll_loss_b = ll_loss_b.data.cpu().numpy()[0]
+        self.gen_ll_loss_aba = ll_loss_aba.data.cpu().numpy()[0]
+        self.gen_ll_loss_bab = ll_loss_bab.data.cpu().numpy()[0]
+
+        # Losses from (C, D)
+        self.gen_enc_dcd_loss = enc_dcd_loss.data.cpu().numpy()[0]
+        self.gen_enc_cdc_loss = enc_cdc_loss.data.cpu().numpy()[0]
+        self.gen_ad_loss_c = ad_loss_c.data.cpu().numpy()[0]
+        self.gen_ad_loss_d = ad_loss_d.data.cpu().numpy()[0]
+        self.gen_ll_loss_c = ll_loss_c.data.cpu().numpy()[0]
+        self.gen_ll_loss_d = ll_loss_d.data.cpu().numpy()[0]
+        self.gen_ll_loss_cdc = ll_loss_cdc.data.cpu().numpy()[0]
+        self.gen_ll_loss_dcd = ll_loss_dcd.data.cpu().numpy()[0]
+
+        return (x_aa, x_ba, x_ab, x_bb, x_aba, x_bab, x_cc, x_dc, x_cd, x_dd, x_cdc, x_dcd)
+
+    def dis_update(self, images_a, images_b, images_c, images_d, hyperparameters):
+        self.dis.zero_grad()
+        x_aa, x_ba, x_ab, x_bb, x_cc, x_dc, x_cd, x_dd, shared = \
+            self.gen(images_a, images_b, images_c, images_d)
+        data_a = torch.cat((images_a, x_ba), 0)
+        data_b = torch.cat((images_b, x_ab), 0)
+        data_c = torch.cat((images_c, x_dc), 0)
+        data_d = torch.cat((images_d, x_cd), 0)
+        res_a, res_b, res_c, res_d = self.dis(data_a, data_b, data_c, data_d)
+        # res_true_a, res_true_b = self.dis(images_a,images_b)
+        # res_fake_a, res_fake_b = self.dis(x_ba, x_ab)
+
+        # Loss for (A, B)
+        for it, (this_a, this_b) in enumerate(itertools.izip(res_a, res_b)):
+            out_a = nn.functional.sigmoid(this_a)
+            out_b = nn.functional.sigmoid(this_b)
+            out_true_a, out_fake_a = torch.split(out_a, out_a.size(0) // 2, 0)
+            out_true_b, out_fake_b = torch.split(out_b, out_b.size(0) // 2, 0)
+            out_true_n = out_true_a.size(0)
+            out_fake_n = out_fake_a.size(0)
+            all1 = Variable(torch.ones((out_true_n)).cuda(self.gpu))
+            all0 = Variable(torch.zeros((out_fake_n)).cuda(self.gpu))
+            ad_true_loss_a = nn.functional.binary_cross_entropy(
+                out_true_a, all1)
+            ad_true_loss_b = nn.functional.binary_cross_entropy(
+                out_true_b, all1)
+            ad_fake_loss_a = nn.functional.binary_cross_entropy(
+                out_fake_a, all0)
+            ad_fake_loss_b = nn.functional.binary_cross_entropy(
+                out_fake_b, all0)
+            if it == 0:
+                ad_loss_a = ad_true_loss_a + ad_fake_loss_a
+                ad_loss_b = ad_true_loss_b + ad_fake_loss_b
+            else:
+                ad_loss_a += ad_true_loss_a + ad_fake_loss_a
+                ad_loss_b += ad_true_loss_b + ad_fake_loss_b
+            true_a_acc = _compute_true_acc(out_true_a)
+            true_b_acc = _compute_true_acc(out_true_b)
+            fake_a_acc = _compute_fake_acc(out_fake_a)
+            fake_b_acc = _compute_fake_acc(out_fake_b)
+            exec('self.dis_true_acc_%d = 0.5 * (true_a_acc + true_b_acc)' % it)
+            exec('self.dis_fake_acc_%d = 0.5 * (fake_a_acc + fake_b_acc)' % it)
+
+        # Loss for (C, D)
+        for it, (this_c, this_d) in enumerate(itertools.izip(res_c, res_d)):
+            out_c = nn.functional.sigmoid(this_c)
+            out_d = nn.functional.sigmoid(this_d)
+            out_true_c, out_fake_c = torch.split(out_c, out_c.size(0) // 2, 0)
+            out_true_d, out_fake_d = torch.split(out_d, out_d.size(0) // 2, 0)
+            out_true_n = out_true_c.size(0)
+            out_fake_n = out_fake_c.size(0)
+            all1 = Variable(torch.ones((out_true_n)).cuda(self.gpu))
+            all0 = Variable(torch.zeros((out_fake_n)).cuda(self.gpu))
+            ad_true_loss_c = nn.functional.binary_cross_entropy(
+                out_true_c, all1)
+            ad_true_loss_d = nn.functional.binary_cross_entropy(
+                out_true_d, all1)
+            ad_fake_loss_c = nn.functional.binary_cross_entropy(
+                out_fake_c, all0)
+            ad_fake_loss_d = nn.functional.binary_cross_entropy(
+                out_fake_d, all0)
+            if it == 0:
+                ad_loss_c = ad_true_loss_c + ad_fake_loss_d
+                ad_loss_d = ad_true_loss_d + ad_fake_loss_d
+            else:
+                ad_loss_c += ad_true_loss_c + ad_fake_loss_c
+                ad_loss_d += ad_true_loss_d + ad_fake_loss_d
+            true_c_acc = _compute_true_acc(out_true_c)
+            true_d_acc = _compute_true_acc(out_true_d)
+            fake_c_acc = _compute_fake_acc(out_fake_c)
+            fake_d_acc = _compute_fake_acc(out_fake_d)
+            exec('self.dis_true_acc_%d += 0.5 * (true_c_acc + true_d_acc)' % it)
+            exec('self.dis_fake_acc_%d += 0.5 * (fake_c_acc + fake_d_acc)' % it)
+
+        loss = hyperparameters['gan_w'] * (ad_loss_a + ad_loss_b) + \
+               1.5 * hyperparameters['gan_w'] * (ad_loss_c + ad_loss_d)
+        loss.backward()
+        self.dis_opt.step()
+        self.dis_loss = loss.data.cpu().numpy()[0]
+        return
