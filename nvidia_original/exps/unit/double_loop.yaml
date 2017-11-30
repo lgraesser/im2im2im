@@ -3,8 +3,9 @@
 train:
   snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/double_loop/results # Where do you want to save the outputs
   hyperparameters:
+    batch_size: 1
     gen_ab:
-      name: COCOResGenSmallK4Way
+      name: COCOResGenSmallK
       ch: 64               # base channel number per layer
       input_dim_a: 3
       input_dim_b: 3
@@ -17,7 +18,7 @@ train:
       n_gen_res_blk: 3
       n_gen_front_blk: 3
     gen_cd:
-      name: COCOResGenSmallK4Way
+      name: COCOResGenSmallK
       ch: 64               # base channel number per layer
       input_dim_a: 3
       input_dim_b: 3

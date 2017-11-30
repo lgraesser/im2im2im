@@ -36,20 +36,23 @@ def main(argv):
 
     gen_ab = None
     gen_bc = None
-    exec('gen_ab = %s(config.hyperparameters[\'gen\'])' %
+    exec('gen_ab = %s(config.hyperparameters[\'gen_ab\'])' %
          config.hyperparameters['gen_ab']['name'])
-    exec('gen_bc = %s(config.hyperparameters[\'gen\'])' %
-         config.hyperparameters['gen_bc']['name'])
-    dirname = os.path.dirname(snapshot_prefix)
-    model_path = os.path.join(dirname, opts.gen_ab)
-    gen_ab.load_state_dict(torch.load(model_path))
-    model_path = os.path.join(dirname, opts.gen_cd)
-    gen_cd.load_state_dict(torch.load(model_path))
+    exec('gen_bc = %s(config.hyperparameters[\'gen_cd\'])' %
+         config.hyperparameters['gen_cd']['name'])
     print("============ GENERATOR AB ==============")
     print(gen_ab)
     print("============ GENERATOR CD ==============")
     print(gen_bc)
-
+    dirname = os.path.dirname(config.snapshot_prefix)
+    model_path = os.path.join(dirname, opts.gen_ab)
+    print(model_path)
+    gen_ab.load_state_dict(torch.load(model_path))
+    print("Generator ab loaded")
+    model_path = os.path.join(dirname, opts.gen_cd)
+    print(model_path)
+    gen_cd.load_state_dict(torch.load(model_path))
+    print("Generator cd loaded")
 
 if __name__ == '__main__':
     main(sys.argv)
