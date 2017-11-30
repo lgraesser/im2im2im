@@ -45,11 +45,7 @@ def main(argv):
     print(gen_ab)
     print("============ GENERATOR CD ==============")
     print(gen_cd)
-<<<<<<< HEAD
-    dirname = os.path.dirname(snapshot_prefix)
-=======
     dirname = os.path.dirname(config.snapshot_prefix)
->>>>>>> 99c7d7d9a924b88018a18d9106aa75125b5234d3
     model_path = os.path.join(dirname, opts.gen_ab)
     gen_ab.load_state_dict(torch.load(model_path))
     print("Pre trained generator ab loaded")
@@ -68,11 +64,69 @@ def main(argv):
         images_c = Variable(images_c.cuda(opts.gpu))
         images_d = Variable(images_d.cuda(opts.gpu))
 
+        # Single loop pass
+        gen_ab.eval()
+        x_aa, x_ba, x_ab, x_bb, _ = gen_ab(images_a, images_b)
+        x_bab, _ = gen_ab.forward_a2b(x_ba)
+        x_aba, _ = gen_ab.forward_b2a(x_ab)
+
+        gen_cd.eval()
+        x_cc, x_dc, x_cd, x_dd, _ = gen_cd(images_c, images_d)
+        x_dcd, _ = gen_cd.forward_a2b(x_cd)
+        x_cdc, _ = gen_cd.forward_b2a(x_cd)
+
         # Double loop pass
-        # TODO:
+        x_cd_ab, _ = gen_ab.forward_a2b(x_cd)
+        x_cd_ba, _ = gen_ab.forward_b2a(x_cd)
+        x_dc_ab, _ = gen_ab.forward_a2b(x_dc)
+        x_dc_ba, _ = gen_ab.forward_b2a(x_dc)
 
-        # Dump training stats in log file
+        x_ab_cd, _ = gen_cd.forward_a2b(x_ab)
+        x_ab_dc, _ = gen_cd.forward_b2a(x_ab)
+        x_ba_cd, _ = gen_cd.forward_a2b(x_ba)
+        x_ba_dc, _ = gen_cd.forward_b2a(x_ba)
 
+        # Assemble images
+        # Single loop
+        images_a = self.normalize_image(images_a)
+        images_b = self.normalize_image(images_b)
+        images_c = self.normalize_image(images_c)
+        images_d = self.normalize_image(images_d)
+        x_aa = self.normalize_image(x_aa)
+        x_ba = self.normalize_image(x_ba)
+        x_ab = self.normalize_image(x_ab)
+        x_bb = self.normalize_image(x_bb)
+        x_aba = self.normalize_image(x_aba)
+        x_bab = self.normalize_image(x_bab)
+        x_cc = self.normalize_image(x_cc)
+        x_dc = self.normalize_image(x_dc)
+        x_cd = self.normalize_image(x_cd)
+        x_dd = self.normalize_image(x_dd)
+        x_cdc = self.normalize_image(x_cdc)
+        x_dcd = self.normalize_image(x_dcd)
+        assembled_images =  torch.cat((
+                images_a[0:1, ::], x_aa[0:1, ::], x_ab[0:1, ::], x_aba[0:1, ::],
+                images_b[0:1, ::], x_bb[0:1, ::], x_ba[0:1, ::], x_bab[0:1, ::],
+                images_c[0:1, ::], x_cc[0:1, ::], x_cd[0:1, ::], x_cdc[0:1, ::],
+                images_d[0:1, ::], x_dd[0:1, ::], x_dc[0:1, ::], x_dcd[0:1, ::]), 3)
+
+        # double loop
+        x_ab_cd = self.normalize_image(x_ab_cd)
+        x_ab_dc = self.normalize_image(x_ab_dc)
+        x_ba_cd = self.normalize_image(x_ba_cd)
+        x_ba_dc = self.normalize_image(x_ba_dc)
+        x_cd_ab = self.normalize_image(x_cd_ab)
+        x_cd_ba = self.normalize_image(x_cd_ba)
+        x_dc_ab = self.normalize_image(x_dc_ab)
+        x_dc_ba = self.normalize_image(x_dc_ba)
+        assembled_dbl_loop_images =  torch.cat((
+                images_a[0:1, ::], x_ab[0:1, ::], x_ab_cd[0:1, ::], x_ab_dc[0:1, ::],
+                images_b[0:1, ::], x_ba[0:1, ::], x_ba_cd[0:1, ::], x_ba_dc[0:1, ::],
+                images_c[0:1, ::], x_cd[0:1, ::], x_cd_ab[0:1, ::], x_cd_ba[0:1, ::],
+                images_d[0:1, ::], x_dc[0:1, ::], x_dc_ab[0:1, ::], x_dc_ba[0:1, ::]
+                ), 3)
+                
+        # save images
         if (it + 1) % config.image_save_iterations == 0:
             img_filename = '%s/gen_%08d.jpg' % (
                 image_directory, it + 1)
