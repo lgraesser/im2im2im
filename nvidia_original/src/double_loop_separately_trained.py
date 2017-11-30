@@ -4,6 +4,11 @@
 Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
 """
+
+'''
+Takes a two, two way trainers and generates composed image to image translation
+across four distributions
+'''
 import sys
 from tools import *
 from trainers import *
@@ -32,10 +37,10 @@ def main(argv):
 
     batch_size = config.hyperparameters['batch_size']
 
-    train_loader_a = get_data_loader(config.datasets['train_a'], batch_size)
-    train_loader_b = get_data_loader(config.datasets['train_b'], batch_size)
-    train_loader_c = get_data_loader(config.datasets['train_c'], batch_size)
-    train_loader_d = get_data_loader(config.datasets['train_d'], batch_size)
+    train_loader_a = get_data_loader(config.datasets['train_a'], batch_size, shuffle=False)
+    train_loader_b = get_data_loader(config.datasets['train_b'], batch_size, shuffle=False)
+    train_loader_c = get_data_loader(config.datasets['train_c'], batch_size, shuffle=False)
+    train_loader_d = get_data_loader(config.datasets['train_d'], batch_size, shuffle=False)
 
     gen_ab = None
     gen_cd = None
@@ -128,7 +133,7 @@ def main(argv):
                 images_c[0:1, ::], x_cd[0:1, ::], x_cd_ab[0:1, ::], x_cd_ba[0:1, ::],
                 images_d[0:1, ::], x_dc[0:1, ::], x_dc_ab[0:1, ::], x_dc_ba[0:1, ::]
                 ), 3)
-                
+
         # save images
         if (it + 1) % config.image_save_iterations == 0:
             img_filename = '%s/gen_%08d.jpg' % (
@@ -141,5 +146,6 @@ def main(argv):
                 assembled_dbl_loop_images.data / 2 + 0.5, dbl_img_filename, nrow=2)
         if (it + 1) % 10 == 0:
           print("Iteration: {}".format(it + 1))
+
 if __name__ == '__main__':
     main(sys.argv)

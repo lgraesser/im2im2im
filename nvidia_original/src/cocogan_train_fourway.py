@@ -4,6 +4,11 @@
 Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
 """
+
+'''
+Trainer for four distribution joint model, pairwise trained
+'''
+
 import sys
 from tools import *
 from trainers import *
@@ -65,7 +70,7 @@ def main(argv):
 
     trainer = []
     trainer = init_trainer(trainer, config)
-    
+
     print("============ DISCRIMINATOR ==============")
     print(trainer.dis)
     print("============ GENERATOR ==============")
@@ -77,13 +82,13 @@ def main(argv):
     dis_ab = None
     dis_cd = None
     (gen_ab, gen_cd, dis_ab, dis_cd) = init_warm_start_models(gen_ab, gen_cd, dis_ab, dis_cd, config)
-    
+
     # If not warm starting check if resume training
     iterations = 0
     if opts.resume == 1 and opts.warm_start == 0:
         iterations = trainer.resume(config.snapshot_prefix)
     trainer.cuda(opts.gpu)
-    
+
     # Warm start
     if opts.warm_start == 1:
         print("============ GENERATOR AB ==============")
