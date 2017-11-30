@@ -17,6 +17,11 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option('--gpu', type=int, help="gpu id", default=0)
 parser.add_option('--resume', type=int, help="resume training?", default=0)
+parser.add_option('--warm_start', type=int, help="warm start training. If yes provide two pairs of generators and discriminators?", default=0)
+parser.add_option('--gen_ab', type=str, help="generator ab for warm start")
+parser.add_option('--gen_cd', type=str, help="generator cd for warm start")
+parser.add_option('--disc_ab', type=str, help="discriminator ab for warm start")
+parser.add_option('--disc_cd', type=str, help="discriminator cd for warm start")
 parser.add_option('--config', type=str, help="net configuration")
 parser.add_option('--log', type=str, help="log path")
 
@@ -44,6 +49,9 @@ def main(argv):
   if opts.resume == 1:
     iterations = trainer.resume(config.snapshot_prefix)
   trainer.cuda(opts.gpu)
+  if opts.warm_start == 1:
+      # Load models
+      # Warm start init
 
   print("============ DISCRIMINATOR ==============")
   print(trainer.dis)
