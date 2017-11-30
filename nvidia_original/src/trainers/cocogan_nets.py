@@ -245,9 +245,9 @@ class COCOResGen(nn.Module):
         encB = []
         # Encoders
         encA += [LeakyReLUConv2d(input_dim_a, ch,
-                                 kernel_size=7, stride=1, padding=3)]
+                                 kernel_size=3, stride=1, padding=1)]
         encB += [LeakyReLUConv2d(input_dim_b, ch,
-                                 kernel_size=7, stride=1, padding=3)]
+                                 kernel_size=3, stride=1, padding=1)]
         tch = ch
         for i in range(1, n_enc_front_blk):
             encA += [ReLUINSConv2d(tch, tch * 2,

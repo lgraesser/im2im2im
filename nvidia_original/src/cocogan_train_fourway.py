@@ -21,14 +21,31 @@ parser.add_option('--warm_start', type=int,
                   help="warm start training. If yes provide two pairs of generators and discriminators?", default=0)
 parser.add_option('--gen_ab', type=str, help="generator ab for warm start")
 parser.add_option('--gen_cd', type=str, help="generator cd for warm start")
-parser.add_option('--disc_ab', type=str,
+parser.add_option('--dis_ab', type=str,
                   help="discriminator ab for warm start")
-parser.add_option('--disc_cd', type=str,
+parser.add_option('--dis_cd', type=str,
                   help="discriminator cd for warm start")
 parser.add_option('--config', type=str, help="net configuration")
 parser.add_option('--log', type=str, help="log path")
 
 MAX_EPOCHS = 100000
+
+def init_warm_start_models(gen_ab, gen_cd, dis_ab, dis_cd, config):
+    exec('gen_ab = %s(config.hyperparameters[\'gen_pair\'])' %
+             config.hyperparameters['gen_pair']['name'])
+    exec('gen_cd = %s(config.hyperparameters[\'gen_pair\'])' %
+             config.hyperparameters['gen_pair']['name'])
+    exec('dis_ab = %s(config.hyperparameters[\'dis_pair\'])' %
+             config.hyperparameters['dis_pair']['name'])
+    exec('dis_cd = %s(config.hyperparameters[\'dis_pair\'])' %
+             config.hyperparameters['dis_pair']['name'])
+    exec ("trainer=%s(config.hyperparameters)" % config.hyperparameters['trainer'])
+    return (gen_ab, gen_cd, dis_ab, dis_cd)
+
+
+def init_trainer(trainer, config):
+    exec ("trainer=%s(config.hyperparameters)" % config.hyperparameters['trainer'])
+    return trainer
 
 
 def main(argv):
@@ -47,26 +64,28 @@ def main(argv):
     train_loader_d = get_data_loader(config.datasets['train_d'], batch_size)
 
     trainer = []
-    exec("trainer=%s(config.hyperparameters)" % config.hyperparameters['trainer'])
-    # Check if resume training
+    trainer = init_trainer(trainer, config)
+    
+    print("============ DISCRIMINATOR ==============")
+    print(trainer.dis)
+    print("============ GENERATOR ==============")
+    print(trainer.gen)
+
+    # Set up for warm start
+    gen_ab = None
+    gen_cd = None
+    dis_ab = None
+    dis_cd = None
+    (gen_ab, gen_cd, dis_ab, dis_cd) = init_warm_start_models(gen_ab, gen_cd, dis_ab, dis_cd, config)
+    
+    # If not warm starting check if resume training
     iterations = 0
-    if opts.resume == 1:
+    if opts.resume == 1 and opts.warm_start == 0:
         iterations = trainer.resume(config.snapshot_prefix)
     trainer.cuda(opts.gpu)
+    
+    # Warm start
     if opts.warm_start == 1:
-        # Load models
-        gen_ab = None
-        gen_cd = None
-        dis_ab = None
-        dis_cb = None
-        exec('gen_ab = %s(config.hyperparameters[\'gen\'])' %
-             config.hyperparameters['gen']['name'])
-        exec('gen_cd = %s(config.hyperparameters[\'gen\'])' %
-             config.hyperparameters['gen']['name'])
-        exec('dis_ab = %s(config.hyperparameters[\'dis\'])' %
-             config.hyperparameters['dis']['name'])
-        exec('dis_cd = %s(config.hyperparameters[\'dis\'])' %
-             config.hyperparameters['dis']['name'])
         print("============ GENERATOR AB ==============")
         print(gen_ab)
         print("============ GENERATOR CD ==============")
@@ -119,10 +138,11 @@ def main(argv):
         def load_params(flattened_params, model):
             offset = 0
             for param in model.parameters():
-                param.data.copy_(
-                    (flattened_params[0][offset:offset + param.nelement()] +
-                    flattened_params[1][offset:offset + param.nelement()]) / 2.0
-                    ).view(param.size())
+                fp1 = flattened_params[0][offset:offset + param.nelement()]
+                fp2 = flattened_params[1][offset:offset + param.nelement()]
+                fpjoint = fp1 + fp2
+                fpjoint = torch.div(fpjoint, 2.0)
+                param.data.copy_(fpjoint).view(param.size())
                 offset += param.nelement()
 
         model_S_new = flatten_params(dis_ab.model_S, dis_cd.model_S)
