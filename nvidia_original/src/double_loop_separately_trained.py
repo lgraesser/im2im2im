@@ -37,10 +37,10 @@ def main(argv):
 
     gen_ab = None
     gen_bc = None
-    exec('gen_ab = %s(config.hyperparameters[\'gen\'])' %
+    exec('gen_ab = %s(config.hyperparameters[\'gen_ab\'])' %
          config.hyperparameters['gen_ab']['name'])
-    exec('gen_bc = %s(config.hyperparameters[\'gen\'])' %
-         config.hyperparameters['gen_bc']['name'])
+    exec('gen_bc = %s(config.hyperparameters[\'gen_cd\'])' %
+         config.hyperparameters['gen_cd']['name'])
     print("============ GENERATOR AB ==============")
     print(gen_ab)
     print("============ GENERATOR CD ==============")
