@@ -47,8 +47,7 @@ def main(argv):
     train_loader_d = get_data_loader(config.datasets['train_d'], batch_size)
 
     trainer = []
-    exec("trainer=%s(config.hyperparameters)" %
-         config.hyperparameters['trainer'])
+    exec("trainer=%s(config.hyperparameters)" % config.hyperparameters['trainer'])
     # Check if resume training
     iterations = 0
     if opts.resume == 1:
@@ -122,7 +121,7 @@ def main(argv):
             for param in model.parameters():
                 param.data.copy_(
                     (flattened_params[0][offset:offset + param.nelement()] +
-                    flattened_params[1][offset:offset + param.nelement())]) / 2.0
+                    flattened_params[1][offset:offset + param.nelement()]) / 2.0
                     ).view(param.size())
                 offset += param.nelement()
 
