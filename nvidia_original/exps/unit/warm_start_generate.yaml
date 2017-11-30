@@ -5,6 +5,7 @@ train:
   image_save_iterations: 10
   hyperparameters:
     batch_size: 1
+    trainer:
     gen:
       name: COCOResGenSmallK4Way
       ch: 64               # base channel number per layer
