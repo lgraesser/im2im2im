@@ -20,6 +20,7 @@ parser.add_option('--config', type=str, help="net configuration")
 parser.add_option('--gen_ab', type=str, help="generator ab")
 parser.add_option('--gen_cd', type=str, help="generator cd")
 
+
 def main(argv):
     (opts, args) = parser.parse_args(argv)
 
@@ -40,16 +41,43 @@ def main(argv):
          config.hyperparameters['gen_ab']['name'])
     exec('gen_bc = %s(config.hyperparameters[\'gen\'])' %
          config.hyperparameters['gen_bc']['name'])
-    dirname = os.path.dirname(snapshot_prefix)
-    model_path = os.path.join(dirname, opts.gen_ab)
-    gen_ab.load_state_dict(torch.load(model_path))
-    model_path = os.path.join(dirname, opts.gen_cd)
-    gen_cd.load_state_dict(torch.load(model_path))
     print("============ GENERATOR AB ==============")
     print(gen_ab)
     print("============ GENERATOR CD ==============")
     print(gen_bc)
+    dirname = os.path.dirname(snapshot_prefix)
+    model_path = os.path.join(dirname, opts.gen_ab)
+    gen_ab.load_state_dict(torch.load(model_path))
+    print("Pre trained generator ab loaded")
+    model_path = os.path.join(dirname, opts.gen_cd)
+    gen_cd.load_state_dict(torch.load(model_path))
+    print("Pre trained generator cd loaded")
 
+    it = 0
+    image_directory, snapshot_directory = prepare_snapshot_and_image_folder(config.snapshot_prefix, it, config.image_save_iterations)
+
+    for it, (images_a, images_b, images_c, images_d) in enumerate(itertools.izip(train_loader_a, train_loader_b, train_loader_c, train_loader_d)):
+        if images_a.size(0) != batch_size or images_b.size(0) != batch_size or images_c.size(0) != batch_size or images_d.size(0) != batch_size:
+            continue
+        images_a = Variable(images_a.cuda(opts.gpu))
+        images_b = Variable(images_b.cuda(opts.gpu))
+        images_c = Variable(images_c.cuda(opts.gpu))
+        images_d = Variable(images_d.cuda(opts.gpu))
+
+        # Double loop pass
+        # TODO:
+
+        # Dump training stats in log file
+
+        if (it + 1) % config.image_save_iterations == 0:
+            img_filename = '%s/gen_%08d.jpg' % (
+                image_directory, it + 1)
+            torchvision.utils.save_image(
+                assembled_images.data / 2 + 0.5, img_filename, nrow=2)
+            dbl_img_filename = '%s/gen_dbl_%08d.jpg' % (
+                image_directory, it + 1)
+            torchvision.utils.save_image(
+                assembled_dbl_loop_images.data / 2 + 0.5, dbl_img_filename, nrow=2)
 
 if __name__ == '__main__':
     main(sys.argv)
