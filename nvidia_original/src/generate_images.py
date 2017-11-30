@@ -70,6 +70,14 @@ def main(argv):
         # Get image outputs
         trainer.gen.eval()
         trainer.dis.eval()
+        x_aa, x_ba, x_ab, x_bb, x_cc, x_dc, x_cd, x_dd, shared = \
+            trainer.gen(images_a, images_b, images_c, images_d)
+        x_bab, shared_bab = trainer.gen.forward_a2b(x_ba)
+        x_aba, shared_aba = trainer.gen.forward_b2a(x_ab)
+        x_dcd, shared_dcd = trainer.gen.forward_c2d(x_dc)
+        x_cdc, shared_cdc = trainer.gen.forward_d2c(x_cd)
+        image_outputs = (x_aa, x_ba, x_ab, x_bb, x_aba, x_bab, x_cc, x_dc, x_cd, x_dd, x_cdc, x_dcd)
+
         assembled_images = trainer.assemble_outputs(
             images_a, images_b, images_c, images_d, image_outputs)
         assembled_dbl_loop_images = trainer.assemble_double_loop_outputs(
