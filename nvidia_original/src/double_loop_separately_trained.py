@@ -36,16 +36,20 @@ def main(argv):
     train_loader_d = get_data_loader(config.datasets['train_d'], batch_size)
 
     gen_ab = None
-    gen_bc = None
+    gen_cd = None
     exec('gen_ab = %s(config.hyperparameters[\'gen_ab\'])' %
          config.hyperparameters['gen_ab']['name'])
-    exec('gen_bc = %s(config.hyperparameters[\'gen_cd\'])' %
+    exec('gen_cd = %s(config.hyperparameters[\'gen_cd\'])' %
          config.hyperparameters['gen_cd']['name'])
     print("============ GENERATOR AB ==============")
     print(gen_ab)
     print("============ GENERATOR CD ==============")
     print(gen_cd)
+<<<<<<< HEAD
     dirname = os.path.dirname(snapshot_prefix)
+=======
+    dirname = os.path.dirname(config.snapshot_prefix)
+>>>>>>> 99c7d7d9a924b88018a18d9106aa75125b5234d3
     model_path = os.path.join(dirname, opts.gen_ab)
     gen_ab.load_state_dict(torch.load(model_path))
     print("Pre trained generator ab loaded")
