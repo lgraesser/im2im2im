@@ -34,3 +34,4 @@
 
 ### To do
   - Test the models on the validation dataset
+  - Check the detailed losses in the log files

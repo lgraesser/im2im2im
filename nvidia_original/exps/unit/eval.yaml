@@ -1,0 +1,23 @@
+# Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
+# Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
+train:
+  snapshot_save_iterations: 1000 # How often do you want to save trained models
+  image_save_iterations: 500 # How often do you want to save output images during training
+  image_display_iterations: 500
+  display: 1 # How often do you want to log the training stats
+  snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/blbr_smiling/results # Where do you want to save the outputs
+  hyperparameters:
+    trainer: COCOGANTrainer4Way
+    lr: 0.0003             # learning rate
+    gan_w: 10              # weight on the adversarial loss
+    batch_size: 16          # image batch size per domain
+    max_iterations: 100000 # maximum number of training epochs
+  datasets:
+    train_a: # Domain 1 dataset
+      channels: 3       # image channel number
+      scale: 1.0        # scaling factor for scaling image before processing
+      crop_image_size: 128 # crop image size
+      class_name: dataset_celeba           # dataset class name
+      root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/    # dataset folder location
+      folder: img_align_128/
+      list_name: lists/anant_Black_Hair.txt,lists/anant_Blond_Hair.txt
