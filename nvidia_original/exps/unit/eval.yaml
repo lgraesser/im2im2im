@@ -4,8 +4,9 @@ train:
   snapshot_save_iterations: 1000 # How often do you want to save trained models
   image_save_iterations: 500 # How often do you want to save output images during training
   image_display_iterations: 500
-  display: 1 # How often do you want to log the training stats
-  snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/blbr_smiling/results # Where do you want to save the outputs
+  display: 100 # How often do you want to log the training stats
+  #snapshot_prefix: /misc/vlgscratch2/LecunGroup/anant/unit/exps/celeba/clf # Where do you want to save the outputs
+  snapshot_prefix: /misc/vlgscratch2/LecunGroup/anant/unit/exps/celeba/clf_lrdecay # Where do you want to save the outputs
   hyperparameters:
     trainer: COCOGANTrainer4Way
     lr: 0.0003             # learning rate
@@ -18,6 +19,6 @@ train:
       scale: 1.0        # scaling factor for scaling image before processing
       crop_image_size: 128 # crop image size
       class_name: dataset_celeba           # dataset class name
-      root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/    # dataset folder location
+      root: /misc/vlgscratch2/LecunGroup/anant/unit/datasets/celeba/    # dataset folder location
       folder: img_align_128/
-      list_name: lists/anant_Black_Hair.txt,lists/anant_Blond_Hair.txt
+      list_name: lists/anant_Black_Hair.txt,lists/anant_Blond_Hair.txt,lists/anant_Eyeglasses.txt,lists/anant_Smiling.txt
