@@ -50,12 +50,15 @@ def main(argv):
   #model = resnet18(False, num_classes=2)
   #model = resnet18(opts.pretrained, num_classes=len(config.datasets['train_a']['list_name']))
   model = ResNet18(4)#vgg11_bn(opts.pretrained, num_classes=len(config.datasets['train_a']['list_name']))
+  
   if opts.gpu != -1:
     model.cuda()
   print(model)
+  
   crit = torch.nn.CrossEntropyLoss()
   opti = torch.optim.Adam(model.parameters(), lr=lr)
-  train_loader = get_data_loader(config.datasets['train_a'], batch_size, num_workers=2)
+  train_loader = get_data_loader(config.datasets['train'], batch_size, num_workers=2)
+  val_loader = get_data_loader(config.datasets['val'], batch_size, num_workers=2)
 
 
   for ep in range(0, max_iterations):
@@ -75,17 +78,43 @@ def main(argv):
         if (iterations + 1) % config.display == 0:
           print('Train Epoch: {} \t Iter: {} \tLoss: {:.6f}'.format(
                 ep, iterations, loss.data[0]))
+
+          model.eval()
+          validation_loss = 0
+          correct = 0          
+          for val_im, val_label in val_loader:
+            if val_im.size(0) != batch_size:
+              continue
+            val_im, val_label = Variable(val_im, volatile=True), Variable(val_label, volatile=True)
+            if opts.gpu != -1:
+                val_im, val_label = val_im.cuda(), val_label.cuda()            
+            val_pred = model(im)
+            validation_loss += crit(val_pred, val_label).data[0]            
+            val_pred = torch.max(val_pred, 1)[1]
+            correct += pred.eq(val_label.data.view_as(val_pred)).cpu().sum()
+
+          validation_loss /= len(val_loader.dataset)
+          val_acc = 100.0 * correct / len(val_loader.dataset)
+          print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.3f}%)\n'.format(
+              validation_loss, correct, len(val_loader.dataset),
+              val_acc))
+          
           tensorboard_logger.log_value('train_loss', loss.data[0], iterations)
+          tensorboard_logger.log_value('val_loss', validation_loss, iterations)
+          tensorboard_logger.log_value('val_acc', val_acc, iterations)
+
+          model.train()
 
         if (iterations+1) % config.snapshot_save_iterations == 0:
             torch.save(model.state_dict(), os.path.join(model_path, "%d.pth"%iterations))
         iterations += 1
         if iterations >= max_iterations:
             return
-      
-              
-      lr = lr*(0.1**int(ep/10))      
-      opti = torch.optim.Adam(model.parameters(), lr=lr)
+        
+      # I think lr_decay is not needed with Adam              
+      # lr = lr*(0.1**int(ep/10))      
+      # opti = torch.optim.Adam(model.parameters(), lr=lr)
+      # print("LR changed to {}".format(lr))
       
 
 if __name__ == '__main__':
