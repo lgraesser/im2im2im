@@ -26,7 +26,8 @@ class dataset_celeba(data.Dataset):
           content = f.readlines()
         self.images.extend([(os.path.join(self.root, self.folder, x.strip().split(' ')[0]), int(x.strip().split(' ')[1])) for x in content])
     else:
-      list_fullpath = os.path.join(self.root, self.list_name)
+      #list_fullpath = os.path.join(self.root, self.list_name)
+      list_fullpath = self.list_name
       with open(list_fullpath) as f:
         content = f.readlines()
       self.images = [os.path.join(self.root, self.folder, x.strip().split(' ')[0]) for x in content]

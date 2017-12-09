@@ -6,7 +6,7 @@ train:
   image_display_iterations: 1000
   display: 100 # How often do you want to log the training stats
   #snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/smiling_smallk/results # Where do you want to save the outputs
-  snapshot_prefix: /misc/vlgscratch2/LecunGroup/anant/im2im/unit/exps/celeba/eyeglasses
+  snapshot_prefix: /scratch/ag4508/unit/exps/eyeglass/eyeglass
   hyperparameters:
     trainer: COCOGANTrainer
     lr: 0.0001             # learning rate
@@ -18,7 +18,7 @@ train:
     batch_size: 1          # image batch size per domain
     max_iterations: 100000 # maximum number of training epochs
     gen:
-      name: COCOResGen2
+      name: COCOResGenSmallK
       ch: 64               # base channel number per layer
       input_dim_a: 3
       input_dim_b: 3
@@ -29,7 +29,7 @@ train:
       n_gen_res_blk: 3
       n_gen_front_blk: 3
     dis:
-      name: COCOSharedDis
+      name: COCOSharedDisSmallK
       ch: 64
       input_dim_a: 3
       input_dim_b: 3
@@ -42,15 +42,15 @@ train:
       crop_image_size: 128 # crop image size
       class_name: dataset_celeba           # dataset class name      
       #root: /misc/vlgscratch2/LecunGroup/laura/datasets/celeba/    # dataset folder location
-      root: /misc/vlgscratch2/LecunGroup/anant/unit/datasets/celeba/
+      root: /scratch/ag4508/unit/data 
       folder: img_align_128/
-      list_name: lists/anant_eye_no_smiling.txt
+      list_name: /home/ag4508/im2im2im/nvidia_original/datasets/celeba/lists/anant_eye_no_smiling.txt
     train_b: # Domain 2 dataset
       channels: 3       # image channel number
       scale: 1.0        # scaling factor for scaling image before processing
       crop_image_size: 128 # crop image size
       class_name: dataset_celeba           # dataset class name
       #root: /misc/vlgscratch2/LecunGroup/laura/datasets/celeba/    # dataset folder location      
-      root: /misc/vlgscratch2/LecunGroup/anant/unit/datasets/celeba/
+      root: /scratch/ag4508/unit/data 
       folder: img_align_128/
-      list_name: lists/anant_no_eye_no_smiling_1.txt
+      list_name: /home/ag4508/im2im2im/nvidia_original/datasets/celeba/lists/anant_no_eye_no_smiling_2.txt
