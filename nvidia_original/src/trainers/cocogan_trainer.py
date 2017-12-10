@@ -4,7 +4,7 @@ Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses
 """
 from cocogan_nets import *
 from init import *
-from helpers import get_model_list, _compute_fake_acc, _compute_true_acc
+from helpers import get_model_list, _compute_fake_acc, _compute_true_acc, calc_grad_norm
 import torch
 import torch.nn as nn
 import os
@@ -277,6 +277,7 @@ class COCOGANTrainer4Way(nn.Module):
             hyperparameters['kl_direct_link_w'] * (enc_loss + enc_loss) + \
             hyperparameters['kl_cycle_link_w'] * (enc_dcd_loss + enc_cdc_loss)
 
+        self.gen_param_norm, self.gen_grad_norm = calc_grad_norm(self.gen.parameters())
         total_loss.backward()
         self.gen_opt.step()
 
@@ -382,6 +383,9 @@ class COCOGANTrainer4Way(nn.Module):
 
         loss = hyperparameters['gan_w'] * (ad_loss_a + ad_loss_b) + \
                hyperparameters['gan_w'] * (ad_loss_c + ad_loss_d)
+
+        self.dis_param_norm, self.dis_grad_norm = calc_grad_norm(self.dis.parameters())
+        
         loss.backward()
         self.dis_opt.step()
         self.dis_loss = loss.data.cpu().numpy()[0]
