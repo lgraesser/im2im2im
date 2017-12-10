@@ -40,3 +40,17 @@ def _compute_fake_acc2(predictions):
   _, true_predicts = torch.max(predictions.data, 1)
   acc = (true_predicts == 0).sum() / (1.0 * true_predicts.size(0))
   return acc
+
+def calc_grad_norm(parameters, norm_type=2):
+    norm_type = float(norm_type)
+    total_norm, total_grad_norm = 0, 0
+    for p in parameters:
+        param_norm = p.grad.data.norm(norm_type)
+        total_grad_norm += param_norm ** norm_type
+
+        param_norm = p.data.norm(norm_type)
+        total_norm += param_norm ** norm_type
+
+    total_norm = total_norm ** (1. / norm_type)
+    total_grad_norm = total_grad_norm ** (1. / norm_type)
+    return (total_norm, total_grad_norm)
