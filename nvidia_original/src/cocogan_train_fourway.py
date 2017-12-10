@@ -77,11 +77,12 @@ def main(argv):
     print(trainer.gen)
 
     # Set up for warm start
-    gen_ab = None
-    gen_cd = None
-    dis_ab = None
-    dis_cd = None
-    (gen_ab, gen_cd, dis_ab, dis_cd) = init_warm_start_models(gen_ab, gen_cd, dis_ab, dis_cd, config)
+    if opts.warm_start == 1:
+        gen_ab = None
+        gen_cd = None
+        dis_ab = None
+        dis_cd = None
+        (gen_ab, gen_cd, dis_ab, dis_cd) = init_warm_start_models(gen_ab, gen_cd, dis_ab, dis_cd, config)
 
     # If not warm starting check if resume training
     iterations = 0
