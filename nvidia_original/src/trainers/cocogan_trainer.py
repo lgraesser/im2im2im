@@ -280,9 +280,9 @@ class COCOGANTrainer4Way(nn.Module):
         
         total_loss.backward()
 
-        self.gen_update_gen_enc_param_norm, self.gen_update_gen_enc_grad_norm = calc_grad_norm(self.gen.enc_shared.parameters())
-        self.gen_update_gen_dec_param_norm, self.gen_update_gen_dec_grad_norm = calc_grad_norm(self.gen.dec_shared.parameters())
-        self.gen_update_dis_param_norm, self.gen_update_dis_grad_norm = calc_grad_norm(self.dis.model_S.parameters())
+        self.gen_update_gen_enc_param_norm = calc_grad_norm(self.gen.enc_shared.parameters())
+        self.gen_update_gen_dec_param_norm = calc_grad_norm(self.gen.dec_shared.parameters())
+        self.gen_update_dis_param_norm = calc_grad_norm(self.dis.model_S.parameters())
 
 
         self.gen_opt.step()
@@ -389,16 +389,15 @@ class COCOGANTrainer4Way(nn.Module):
 
         loss = hyperparameters['gan_w'] * (ad_loss_a + ad_loss_b) + \
                hyperparameters['gan_w'] * (ad_loss_c + ad_loss_d)
-
-        self.dis_param_norm, self.dis_grad_norm = calc_grad_norm(self.dis.parameters())
+        
 
         loss.backward()
 
-        self.gen_update_gen_enc_param_norm, self.gen_update_gen_enc_grad_norm = calc_grad_norm(self.gen.enc_shared.parameters())
-        self.gen_update_gen_dec_param_norm, self.gen_update_gen_dec_grad_norm = calc_grad_norm(self.gen.dec_shared.parameters())
-        self.gen_update_dis_param_norm, self.gen_update_dis_grad_norm = calc_grad_norm(self.dis.model_S.parameters())
+        self.gen_update_gen_enc_param_norm = calc_grad_norm(self.gen.enc_shared.parameters())
+        self.gen_update_gen_dec_param_norm = calc_grad_norm(self.gen.dec_shared.parameters())
+        self.gen_update_dis_param_norm = calc_grad_norm(self.dis.model_S.parameters())
 
-        
+
         self.dis_opt.step()
         self.dis_loss = loss.data.cpu().numpy()[0]
         return
