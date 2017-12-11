@@ -124,7 +124,7 @@ class COCOSharedDisSmallK4Way(nn.Module):
         super(COCOSharedDisSmallK4Way, self).__init__()
         if params.get('first_kernel_size', None) is None:
             params['first_kernel_size'] = 3
-
+        self.params = params
         ch = params['ch']
         input_dim_a = params['input_dim_a']
         input_dim_b = params['input_dim_b']
@@ -145,7 +145,7 @@ class COCOSharedDisSmallK4Way(nn.Module):
     def _make_front_net(self, ch, input_dim, n_layer, add_classifier_layer=False):
         model = []
         model += [LeakyReLUConv2d(input_dim, ch,
-                                  kernel_size=params['first_kernel_size'], stride=2, padding=1)]  # 16
+                                  kernel_size=self.params['first_kernel_size'], stride=2, padding=1)]  # 16
         tch = ch
         for i in range(1, n_layer):
             model += [LeakyReLUConv2d(tch, tch * 2,
