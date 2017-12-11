@@ -22,5 +22,7 @@ pip install --user tensorboard
 #python cocogan_train.py --config ../exps/unit/anant_goatee.yaml --log /scratch/ag4508/unit/log/ 
 #python cocogan_train.py --config ../exps/unit/anant_male.yaml --log /scratch/ag4508/unit/log/ 
 #python cocogan_train_fourway.py --config ../exps/unit/anant_smiling_eyeglass_4wayjoint.yaml --log /scratch/ag4508/unit/log/ --resume 1 
-python cocogan_train_fourway.py --config ../exps/unit/anant_smiling_eyeglass_bigK_warmstart.yaml --log /scratch/ag4508/unit/log/ --warm_start 1 --gen_ab /scratch/ag4508/unit/exps/eyeglass_bigK/eyeglass_bigK_gen_00200000.pkl --dis_ab  /scratch/ag4508/unit/exps/eyeglass_bigK/eyeglass_bigK_dis_00200000.pkl --gen_cd /scratch/ag4508/unit/exps/smiling_bigK/smiling_bigK_gen_00200000.pkl --dis_cd /scratch/ag4508/unit/exps/smiling_bigK/smiling_bigK_dis_00200000.pkl 
+#python cocogan_train_fourway.py --config ../exps/unit/anant_smiling_eyeglass_bigK_warmstart.yaml --log /scratch/ag4508/unit/log/ --warm_start 1 --gen_ab /scratch/ag4508/unit/exps/eyeglass_bigK/eyeglass_bigK_gen_00200000.pkl --dis_ab  /scratch/ag4508/unit/exps/eyeglass_bigK/eyeglass_bigK_dis_00200000.pkl --gen_cd /scratch/ag4508/unit/exps/smiling_bigK/smiling_bigK_gen_00200000.pkl --dis_cd /scratch/ag4508/unit/exps/smiling_bigK/smiling_bigK_dis_00200000.pkl 
 
+#python cocogan_train_fourway.py --config ../exps/unit/anant_smiling_haircolorbigK_4wayjoint.yaml --log /scratch/ag4508/unit/log/ 
+python cocogan_train.py --config ../exps/unit/anant_blondbrunette_nosmiling.yaml --log /scratch/ag4508/unit/log/ 
