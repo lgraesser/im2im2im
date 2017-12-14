@@ -499,6 +499,9 @@ class COCOResGenSmallK4Way(nn.Module):
         super(COCOResGenSmallK4Way, self).__init__()
         if params.get('first_kernel_size', None) is None:
             params['first_kernel_size'] = 3
+            encoder_padding = 1
+        else:
+           encoder_padding = 3
         input_dim_a = params['input_dim_a']
         input_dim_b = params['input_dim_b']
         input_dim_c = params['input_dim_c']
@@ -516,13 +519,13 @@ class COCOResGenSmallK4Way(nn.Module):
         encD = []
         # Encoders
         encA += [LeakyReLUConv2d(input_dim_a, ch,
-                                 kernel_size=params['first_kernel_size'], stride=1, padding=1)]
+                                 kernel_size=params['first_kernel_size'], stride=1, padding=encoder_padding)]
         encB += [LeakyReLUConv2d(input_dim_b, ch,
-                                 kernel_size=params['first_kernel_size'], stride=1, padding=1)]
+                                 kernel_size=params['first_kernel_size'], stride=1, padding=encoder_padding)]
         encC += [LeakyReLUConv2d(input_dim_c, ch,
-                                 kernel_size=params['first_kernel_size'], stride=1, padding=1)]
+                                 kernel_size=params['first_kernel_size'], stride=1, padding=encoder_padding)]
         encD += [LeakyReLUConv2d(input_dim_d, ch,
-                                 kernel_size=params['first_kernel_size'], stride=1, padding=1)]
+                                 kernel_size=params['first_kernel_size'], stride=1, padding=encoder_padding)]
         tch = ch
         for i in range(1, n_enc_front_blk):
             encA += [LeakyReLUConv2d(tch, tch * 2,
