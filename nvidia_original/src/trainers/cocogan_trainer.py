@@ -4,7 +4,7 @@ Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses
 """
 from cocogan_nets import *
 from init import *
-from helpers import get_model_list, _compute_fake_acc, _compute_true_acc
+from helpers import get_model_list, _compute_fake_acc, _compute_true_acc, calc_grad_norm
 import torch
 import torch.nn as nn
 import os
@@ -76,6 +76,11 @@ class COCOGANTrainer(nn.Module):
             hyperparameters['kl_direct_link_w'] * (enc_loss + enc_loss) + \
             hyperparameters['kl_cycle_link_w'] * (enc_bab_loss + enc_aba_loss)
         total_loss.backward()
+
+        self.gen_update_gen_enc_param_norm = calc_grad_norm(self.gen.enc_shared.parameters())
+        self.gen_update_gen_dec_param_norm = calc_grad_norm(self.gen.dec_shared.parameters())
+        self.gen_update_dis_param_norm = calc_grad_norm(self.dis.model_S.parameters())
+
         self.gen_opt.step()
         self.gen_enc_loss = enc_loss.data.cpu().numpy()[0]
         self.gen_enc_bab_loss = enc_bab_loss.data.cpu().numpy()[0]
@@ -128,6 +133,10 @@ class COCOGANTrainer(nn.Module):
             exec('self.dis_fake_acc_%d = 0.5 * (fake_a_acc + fake_b_acc)' % it)
         loss = hyperparameters['gan_w'] * (ad_loss_a + ad_loss_b)
         loss.backward()
+
+        self.gen_update_gen_enc_param_norm = calc_grad_norm(self.gen.enc_shared.parameters())
+        self.gen_update_gen_dec_param_norm = calc_grad_norm(self.gen.dec_shared.parameters())
+        self.gen_update_dis_param_norm = calc_grad_norm(self.dis.model_S.parameters())
         self.dis_opt.step()
         self.dis_loss = loss.data.cpu().numpy()[0]
         return
@@ -277,7 +286,14 @@ class COCOGANTrainer4Way(nn.Module):
             hyperparameters['kl_direct_link_w'] * (enc_loss + enc_loss) + \
             hyperparameters['kl_cycle_link_w'] * (enc_dcd_loss + enc_cdc_loss)
 
+        
         total_loss.backward()
+
+        self.gen_update_gen_enc_param_norm = calc_grad_norm(self.gen.enc_shared.parameters())
+        self.gen_update_gen_dec_param_norm = calc_grad_norm(self.gen.dec_shared.parameters())
+        self.gen_update_dis_param_norm = calc_grad_norm(self.dis.model_S.parameters())
+
+
         self.gen_opt.step()
 
         # Combined loss
@@ -382,7 +398,15 @@ class COCOGANTrainer4Way(nn.Module):
 
         loss = hyperparameters['gan_w'] * (ad_loss_a + ad_loss_b) + \
                hyperparameters['gan_w'] * (ad_loss_c + ad_loss_d)
+        
+
         loss.backward()
+
+        self.gen_update_gen_enc_param_norm = calc_grad_norm(self.gen.enc_shared.parameters())
+        self.gen_update_gen_dec_param_norm = calc_grad_norm(self.gen.dec_shared.parameters())
+        self.gen_update_dis_param_norm = calc_grad_norm(self.dis.model_S.parameters())
+
+
         self.dis_opt.step()
         self.dis_loss = loss.data.cpu().numpy()[0]
         return
