@@ -26,7 +26,7 @@ class dataset_celeba(data.Dataset):
       else:
         self.images = [os.path.join(self.root, self.folder, x.strip().split(' ')[0]) for x in content]
 
-    np.random.shuffle(self.images)
+    #np.random.shuffle(self.images)
     self.dataset_size = len(self.images)
 
   def __getitem__(self, index):    
