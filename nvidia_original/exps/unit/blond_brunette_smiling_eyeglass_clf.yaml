@@ -7,14 +7,16 @@ train:
       scale: 1.0        # scaling factor for scaling image before processing
       crop_image_size: 128 # crop image size
       class_name: dataset_celeba           # dataset class name            
-      root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/
+      #root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/
+      root: /scratch/ag4508/unit/data 
       folder: img_align_128/
-      list_name: lists/anant_im2im2im_train.txt
+      list_name: /home/ag4508/im2im2im/nvidia_original/datasets/celeba/lists/anant_im2im2im_train.txt
     valdata: # Domain 2 dataset
       channels: 3       # image channel number
       scale: 1.0        # scaling factor for scaling image before processing
       crop_image_size: 128 # crop image size
       class_name: dataset_celeba           # dataset class name
-      root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/
+      #root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/
+      root: /scratch/ag4508/unit/data 
       folder: img_align_128/
-      list_name: lists/anant_im2im2im_val.txt
+      list_name: /home/ag4508/im2im2im/nvidia_original/datasets/celeba/lists/anant_im2im2im_val.txt
