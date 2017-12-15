@@ -9,7 +9,7 @@ train:
       class_name: dataset_celeba           # dataset class name            
       root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/
       folder: img_align_128/
-      list_name: lists/anant_smiling_train.txt
+      list_name: lists/anant_im2im2im_train.txt
     valdata: # Domain 2 dataset
       channels: 3       # image channel number
       scale: 1.0        # scaling factor for scaling image before processing
@@ -17,4 +17,4 @@ train:
       class_name: dataset_celeba           # dataset class name
       root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/
       folder: img_align_128/
-      list_name: lists/anant_smiling_val.txt
+      list_name: lists/anant_im2im2im_val.txt

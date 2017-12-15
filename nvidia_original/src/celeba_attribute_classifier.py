@@ -66,7 +66,7 @@ if args.resume:
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
 else:
-    net = VGG('VGG11', 2)
+    net = VGG('VGG11', 4)
     #from torchvision.models.vgg import *
     #net = vgg11_bn(num_classes=4)
 tensorboard_logger.configure(log_path)
@@ -116,7 +116,7 @@ def train(epoch):
 
 def test(epoch):
     global best_acc
-    f1 = 0
+    f1 = []
     net.eval()
     test_loss = 0
     correct = 0
@@ -135,9 +135,10 @@ def test(epoch):
         _, predicted = torch.max(outputs.data, 1)
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
-        f1 += f1_score(predicted.cpu().numpy(), targets.data.cpu().numpy(), average='micro')
-    print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-        % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        f1.append(f1_score(predicted.cpu().numpy(), targets.data.cpu().numpy(), average='micro'))
+    f1 = np.mean(f1)
+    print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d) | F1: %.3f'
+        % (test_loss/(batch_idx+1), 100.*correct/total, correct, total), f1)
 
     # Save checkpoint.
     acc = 100.*correct/total
@@ -154,6 +155,7 @@ def test(epoch):
     torch.save(net.state_dict(), '%s/ckpt_%d.t7'%(ckpt_path, epoch))
     tensorboard_logger.log_value('test_loss', test_loss/(batch_idx+1), epoch)
     tensorboard_logger.log_value('test_accuracy', 100.*correct/total, epoch)
+    tensorboard_logger.log_value('test_f1', f1, epoch)
     print(predicted[:10].cpu().numpy())
 
 
