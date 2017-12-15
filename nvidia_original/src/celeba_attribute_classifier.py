@@ -14,6 +14,7 @@ import argparse
 from torch.autograd import Variable
 
 import tensorboard_logger
+import numpy as np
 
 from tools import *
 from common import get_data_loader
@@ -138,7 +139,7 @@ def test(epoch):
         f1.append(f1_score(predicted.cpu().numpy(), targets.data.cpu().numpy(), average='micro'))
     f1 = np.mean(f1)
     print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d) | F1: %.3f'
-        % (test_loss/(batch_idx+1), 100.*correct/total, correct, total), f1)
+        % (test_loss/(batch_idx+1), 100.*correct/total, correct, total, f1))
 
     # Save checkpoint.
     acc = 100.*correct/total
