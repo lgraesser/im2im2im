@@ -1,0 +1,20 @@
+# Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
+# Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
+train:  
+  datasets:
+    traindata: # Domain 1 dataset
+      channels: 3       # image channel number
+      scale: 1.0        # scaling factor for scaling image before processing
+      crop_image_size: 128 # crop image size
+      class_name: dataset_celeba           # dataset class name            
+      root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/
+      folder: img_align_128/
+      list_name: lists/anant_im2im2im_train.txt
+    valdata: # Domain 2 dataset
+      channels: 3       # image channel number
+      scale: 1.0        # scaling factor for scaling image before processing
+      crop_image_size: 128 # crop image size
+      class_name: dataset_celeba           # dataset class name
+      root: /Users/jedi/courses/im2im2im/nvidia_original/datasets/celeba/
+      folder: img_align_128/
+      list_name: lists/anant_im2im2im_val.txt

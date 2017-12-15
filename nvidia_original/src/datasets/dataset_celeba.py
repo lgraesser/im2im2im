@@ -17,20 +17,14 @@ class dataset_celeba(data.Dataset):
     self.image_size = specs['crop_image_size']
     self.random_crop = True
     self.random_mirror = True
-    if "," in self.list_name:
-      self.list_name = self.list_name.split(",")
-      self.images = []
-      for ln in self.list_name:
-        list_fullpath = os.path.join(self.root, ln)
-        with open(list_fullpath) as f:
-          content = f.readlines()
-        self.images.extend([(os.path.join(self.root, self.folder, x.strip().split(' ')[0]), int(x.strip().split(' ')[1])) for x in content])
-    else:
-      #list_fullpath = os.path.join(self.root, self.list_name)
-      list_fullpath = self.list_name
-      with open(list_fullpath) as f:
-        content = f.readlines()
-      self.images = [os.path.join(self.root, self.folder, x.strip().split(' ')[0]) for x in content]
+
+    list_fullpath = os.path.join(self.root, self.list_name)
+    with open(list_fullpath) as f:
+      content = f.readlines()
+      if ',' in content[0]:
+        self.images = [(os.path.join(self.root, self.folder, x.strip().split(',')[0]), int(x.strip('\n').split(',')[1])) for x in content]
+      else:
+        self.images = [os.path.join(self.root, self.folder, x.strip().split(' ')[0]) for x in content]
 
     np.random.shuffle(self.images)
     self.dataset_size = len(self.images)

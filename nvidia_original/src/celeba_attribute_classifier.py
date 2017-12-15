@@ -1,121 +1,161 @@
+from __future__ import print_function
 
-
-import sys
-import os
 import torch
-from tools import *
-from trainers import *
-from datasets import *
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import torch.backends.cudnn as cudnn
+
 import torchvision
-import itertools
-from common import *
-import tensorboard
-from tensorboard import summary
-from optparse import OptionParser
-from clf_models import ResNet18
-from torchvision.models.resnet import resnet18
+import torchvision.transforms as transforms
+
+import os
+import argparse
+from torch.autograd import Variable
+
 import tensorboard_logger
-parser = OptionParser()
-parser.add_option('--gpu', type=int, help="gpu id", default=0)
-parser.add_option('--resume', type=int, help="resume training?", default=0)
-parser.add_option('--config', type=str, help="net configuration")
-parser.add_option('--log', type=str, help="log path")
-parser.add_option('--pretrained', type=int, help="log path", default=0)
 
+from tools import *
+from common import get_data_loader
+from vgg_model import *
+#from focal_loss import FocalLoss
+from sklearn.metrics import f1_score
 
-def main(argv):
-  (opts, args) = parser.parse_args(argv)
-  if opts.gpu != -1:
-    torch.cuda.set_device(opts.gpu)
-  iterations = 0
- 
-  assert isinstance(opts, object)
-  config = NetConfig(opts.config)
+parser = argparse.ArgumentParser(description='')
+parser.add_argument('--lr', default=1e-3, type=float, help='learning rate')
+parser.add_argument('--batch_size', default=32, type=int)
+parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
+parser.add_argument('--gpu_id', type=int, default=0)
+parser.add_argument('--base_path', type=str, default='.')
+parser.add_argument('--exp_version', type=str, default='test')
+parser.add_argument('--config', type=str, help="net configuration", default="../exps/unit/blond_brunette_smiling_eyeglass_clf.yaml")
+args = parser.parse_args()
 
-  if not os.path.exists(config.snapshot_prefix):
-    os.makedirs(config.snapshot_prefix) 
-  model_path = os.path.join(config.snapshot_prefix, 'model')
-  log_path = os.path.join(config.snapshot_prefix, 'logs')
-  if not os.path.exists(model_path):
-    os.makedirs(model_path) 
-  if not os.path.exists(log_path):
-    os.makedirs(log_path) 
-  tensorboard_logger.configure(log_path)
+base_path = args.base_path
+data_path = os.path.join(base_path, 'data')
+exp_path = os.path.join(base_path, args.exp_version)
+ckpt_path = os.path.join(exp_path, 'checkpoint')
+log_path = os.path.join(exp_path, 'logs')
+print("Experiment Name: {}".format(args.exp_version))
+print(ckpt_path)
+for path in [base_path, exp_path, data_path, base_path, ckpt_path, log_path]:
+    if not os.path.exists(path):
+        os.makedirs(path)
 
+use_cuda = torch.cuda.is_available()
+if use_cuda:
+    torch.cuda.set_device(args.gpu_id)
 
+best_acc = 0  # best test accuracy
+start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
-  batch_size = config.hyperparameters['batch_size']
-  max_iterations = config.hyperparameters['max_iterations']
-  lr = config.hyperparameters['lr']
-  #model = resnet18(False, num_classes=2)
-  #model = resnet18(opts.pretrained, num_classes=len(config.datasets['train_a']['list_name']))
-  model = ResNet18(4)#vgg11_bn(opts.pretrained, num_classes=len(config.datasets['train_a']['list_name']))
-  
-  if opts.gpu != -1:
-    model.cuda()
-  print(model)
-  
-  crit = torch.nn.CrossEntropyLoss()
-  opti = torch.optim.Adam(model.parameters(), lr=lr)
-  train_loader = get_data_loader(config.datasets['train'], batch_size, num_workers=2)
-  val_loader = get_data_loader(config.datasets['val'], batch_size, num_workers=2)
+# Data
+print('==> Preparing data..')
+config = NetConfig(args.config)
+trainloader = get_data_loader(config.datasets['traindata'], args.batch_size)
+testloader = get_data_loader(config.datasets['valdata'], args.batch_size)
+# Model
+if args.resume:
+    # Load checkpoint.
+    print('==> Resuming from checkpoint..')
+    #assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
+    checkpoint = torch.load('%s/ckpt.t7'%ckpt_path)
+    net = checkpoint['net']
+    best_acc = checkpoint['acc']
+    start_epoch = checkpoint['epoch']
+else:
+    net = VGG('VGG11', 4)
+    #from torchvision.models.vgg import *
+    #net = vgg11_bn(num_classes=4)
+tensorboard_logger.configure(log_path)
+if use_cuda:
+    net.cuda()
+    #net = torch.nn.DataParallel(net, device_ids=range(torch.cuda.device_count()))
+    cudnn.benchmark = True
 
+criterion = nn.CrossEntropyLoss()
+#criterion = FocalLoss(4, use_cuda)
+optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.5, 0.999), weight_decay=1e-6)
 
-  for ep in range(0, max_iterations):
-      for im, label in train_loader:
-        if im.size(0) != batch_size:
-          continue
-        im = Variable(im)
-        label = Variable(label)
-        if opts.gpu != -1:
-            im, label = im.cuda(), label.cuda()
-        model.zero_grad()
-        pred = model(im)
-        loss = crit(pred, label)
+def train(epoch):
+    global optimizer
+    print('\nEpoch: %d' % epoch)
+    net.train()
+    train_loss = 0
+    correct = 0
+    total = 0
+    for batch_idx, (inputs, targets) in enumerate(trainloader):
+        if batch_idx > 10:
+           break
+        if use_cuda:
+            inputs, targets = inputs.cuda(), targets.cuda()
+        net.zero_grad()
+        inputs, targets = Variable(inputs), Variable(targets)
+        outputs = net(inputs)
+        loss = criterion(outputs, targets)
         loss.backward()
-        opti.step()
+         
+        optimizer.step()
+        train_loss += loss.data[0]
+        _, predicted = torch.max(outputs.data, 1)
+        total += targets.size(0)
+        correct += predicted.eq(targets.data).cpu().sum()
 
-        if (iterations + 1) % config.display == 0:
-          print('Train Epoch: {} \t Iter: {} \tLoss: {:.6f}'.format(
-                ep, iterations, loss.data[0]))
+        #progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+        #    %(train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        if batch_idx % 100 == 0:
+            print('Loss: %.3f | Acc: %.3f%% (%d/%d)'
+            %(train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    tensorboard_logger.log_value('train_loss', train_loss/(batch_idx+1), epoch)
+    tensorboard_logger.log_value('train_accuracy', 100.*correct/total, epoch)
 
-          model.eval()
-          validation_loss = 0
-          correct = 0          
-          for val_im, val_label in val_loader:
-            if val_im.size(0) != batch_size:
-              continue
-            val_im, val_label = Variable(val_im, volatile=True), Variable(val_label, volatile=True)
-            if opts.gpu != -1:
-                val_im, val_label = val_im.cuda(), val_label.cuda()            
-            val_pred = model(im)
-            validation_loss += crit(val_pred, val_label).data[0]            
-            val_pred = torch.max(val_pred, 1)[1]
-            correct += pred.eq(val_label.data.view_as(val_pred)).cpu().sum()
+def test(epoch):
+    global best_acc
+    f1 = 0
+    net.eval()
+    test_loss = 0
+    correct = 0
+    total = 0
+    for batch_idx, (inputs, targets) in enumerate(testloader):
+        if batch_idx > 10:
+            break
+        if use_cuda:
+            inputs, targets = inputs.cuda(), targets.cuda()
+        inputs, targets = Variable(inputs, volatile=True), Variable(targets)
+        outputs = net(inputs)
+        loss = criterion(outputs, targets)
 
-          validation_loss /= len(val_loader.dataset)
-          val_acc = 100.0 * correct / len(val_loader.dataset)
-          print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.3f}%)\n'.format(
-              validation_loss, correct, len(val_loader.dataset),
-              val_acc))
-          
-          tensorboard_logger.log_value('train_loss', loss.data[0], iterations)
-          tensorboard_logger.log_value('val_loss', validation_loss, iterations)
-          tensorboard_logger.log_value('val_acc', val_acc, iterations)
+        test_loss += loss.data[0]
+        _, predicted = torch.max(outputs.data, 1)
+        total += targets.size(0)
+        correct += predicted.eq(targets.data).cpu().sum()
+        f1 += f1_score(predicted.cpu().numpy(), targets.data.cpu().numpy(), average='micro')
+    print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+        % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
-          model.train()
+    # Save checkpoint.
+    acc = 100.*correct/total
+    if acc > best_acc:
+        print('Saving..')
+        state = {
+            'net': net if use_cuda else net,
+            'acc': acc,
+            'epoch': epoch,
+        }
+        #if not os.path.isdir('checkpoint'):
+        #    os.mkdir('checkpoint')
+        torch.save(state, '%s/ckpt.t7'%ckpt_path)
+        best_acc = acc
+    tensorboard_logger.log_value('test_loss', test_loss/(batch_idx+1), epoch)
+    tensorboard_logger.log_value('test_accuracy', 100.*correct/total, epoch)
+    print(predicted[:10].cpu().numpy())
 
-        if (iterations+1) % config.snapshot_save_iterations == 0:
-            torch.save(model.state_dict(), os.path.join(model_path, "%d.pth"%iterations))
-        iterations += 1
-        if iterations >= max_iterations:
-            return
-        
-      # I think lr_decay is not needed with Adam              
-      # lr = lr*(0.1**int(ep/10))      
-      # opti = torch.optim.Adam(model.parameters(), lr=lr)
-      # print("LR changed to {}".format(lr))
-      
 
-if __name__ == '__main__':
-  main(sys.argv)
+
+
+for epoch in range(start_epoch, start_epoch+200):
+    train(epoch)
+    test(epoch)
+
+    lr = args.lr*(0.9**int(epoch/10))
+    optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0.5, 0.999), weight_decay=1e-6)
