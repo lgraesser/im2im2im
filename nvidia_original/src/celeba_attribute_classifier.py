@@ -135,17 +135,17 @@ def test(epoch):
 
     # Save checkpoint.
     acc = 100.*correct/total
-    if acc > best_acc:
-        print('Saving..')
-        state = {
-            'net': net if use_cuda else net,
-            'acc': acc,
-            'epoch': epoch,
-        }
+    if acc > best_acc:        
+        # print('Saving..')
+        # state = {
+        #     'net': net if use_cuda else net,
+        #     'acc': acc,
+        #     'epoch': epoch,
+        # }
         #if not os.path.isdir('checkpoint'):
         #    os.mkdir('checkpoint')
-        torch.save(state, '%s/ckpt.t7'%ckpt_path)
-        best_acc = acc
+      best_acc = (acc, epoch)
+    torch.save(net.state_dict(), '%s/ckpt_%d.t7'%(ckpt_path, epoch))
     tensorboard_logger.log_value('test_loss', test_loss/(batch_idx+1), epoch)
     tensorboard_logger.log_value('test_accuracy', 100.*correct/total, epoch)
     print(predicted[:10].cpu().numpy())
@@ -159,3 +159,4 @@ for epoch in range(start_epoch, start_epoch+200):
 
     lr = args.lr*(0.9**int(epoch/10))
     optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0.5, 0.999), weight_decay=1e-6)
+    print "best acc in epoch:", best_acc
