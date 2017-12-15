@@ -28,6 +28,7 @@ parser.add_argument('--resume', '-r', action='store_true', help='resume from che
 parser.add_argument('--gpu_id', type=int, default=0)
 parser.add_argument('--base_path', type=str, default='.')
 parser.add_argument('--exp_version', type=str, default='test')
+parser.add_argument('--data_type', type=str, default='smiling')
 parser.add_argument('--config', type=str, help="net configuration", default="../exps/unit/blond_brunette_smiling_eyeglass_clf.yaml")
 args = parser.parse_args()
 
@@ -52,6 +53,7 @@ start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 # Data
 print('==> Preparing data..')
 config = NetConfig(args.config)
+print(config.datasets)
 trainloader = get_data_loader(config.datasets['traindata'], args.batch_size)
 testloader = get_data_loader(config.datasets['valdata'], args.batch_size)
 # Model
@@ -64,7 +66,7 @@ if args.resume:
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
 else:
-    net = VGG('VGG11', 4)
+    net = VGG('VGG11', 2)
     #from torchvision.models.vgg import *
     #net = vgg11_bn(num_classes=4)
 tensorboard_logger.configure(log_path)
@@ -85,13 +87,16 @@ def train(epoch):
     correct = 0
     total = 0
     for batch_idx, (inputs, targets) in enumerate(trainloader):
-        if batch_idx > 10:
-           break
+        # if batch_idx > 1:
+        #    break
         if use_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
         net.zero_grad()
         inputs, targets = Variable(inputs), Variable(targets)
         outputs = net(inputs)
+        # print(outputs)
+        # print(targets)
+
         loss = criterion(outputs, targets)
         loss.backward()
          
@@ -116,9 +121,10 @@ def test(epoch):
     test_loss = 0
     correct = 0
     total = 0
+    # print("evall")
     for batch_idx, (inputs, targets) in enumerate(testloader):
-        if batch_idx > 10:
-            break
+        # if batch_idx > 1:
+        #     break
         if use_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
         inputs, targets = Variable(inputs, volatile=True), Variable(targets)
@@ -159,4 +165,4 @@ for epoch in range(start_epoch, start_epoch+200):
 
     lr = args.lr*(0.9**int(epoch/10))
     optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0.5, 0.999), weight_decay=1e-6)
-    print "best acc in epoch:", best_acc
+    print("best acc in epoch:", best_acc)
