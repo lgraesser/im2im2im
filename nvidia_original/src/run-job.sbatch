@@ -35,4 +35,5 @@ module load scikit-learn/intel/0.18.1
 #python double_loop_separately_trained.py --config ../exps/unit/double_loop.yaml --gen_cd /scratch/ag4508/unit/exps/smiling_bigK/smiling_bigK_gen_00200000.pkl --gen_ab /scratch/ag4508/unit/exps/eyeglass_bigK/eyeglass_bigK_gen_00200000.pkl
 
 #python celeba_attribute_classifier.py --batch_size 64 --lr 1e-2 --exp_version clf_hair_smiling --base_path /scratch/ag4508/unit/exps/clfs
-python celeba_attribute_classifier.py --batch_size 64 --lr 1e-3 --exp_version clf_hair_smiling_smalllr --base_path /scratch/ag4508/unit/exps/clfs
+#python celeba_attribute_classifier.py --batch_size 64 --lr 1e-3 --exp_version clf_hair_smiling_smalllr --base_path /scratch/ag4508/unit/exps/clfs
+python evaluation.py --config ../exps/unit/infer_config.yaml --gen_cd /scratch/ag4508/unit/exps/smiling_bigK/smiling_bigK_gen_00200000.pkl --gen_ab /scratch/ag4508/unit/exps/blondbrunette_smiling_bigK/blondbrunette_smiling_bigK_gen_00200000.pkl --clf_model_path /scratch/ag4508/unit/exps/clfs/clf_hair_smiling_smalllr/checkpoint/ckpt_20.t7
