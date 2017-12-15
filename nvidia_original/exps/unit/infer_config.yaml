@@ -5,7 +5,7 @@ train:
   image_save_iterations: 10
   hyperparameters:
     batch_size: 1
-    max_iterations: 100 # maximum number of training epochs
+    max_iterations: 500 # maximum number of training epochs
     gen_ab:
       name: COCOResGen2
       ch: 64               # base channel number per layer
@@ -19,6 +19,7 @@ train:
       n_gen_shared_blk: 1
       n_gen_res_blk: 3
       n_gen_front_blk: 3
+      first_kernel_size: 7
     gen_cd:
       name: COCOResGen2
       ch: 64               # base channel number per layer
@@ -32,6 +33,7 @@ train:
       n_gen_shared_blk: 1
       n_gen_res_blk: 3
       n_gen_front_blk: 3
+      first_kernel_size: 7
   datasets:
     train_a: # Domain 1 dataset
       channels: 3       # image channel number

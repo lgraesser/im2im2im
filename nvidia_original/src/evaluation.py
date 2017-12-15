@@ -27,6 +27,8 @@ parser.add_option('--gpu', type=int, help="gpu id", default=0)
 parser.add_option('--config', type=str, help="net configuration")
 parser.add_option('--gen_ab', type=str, help="generator ab")
 parser.add_option('--gen_cd', type=str, help="generator cd")
+parser.add_option('--mode', type=str, help="generator cd", default="separate")
+parser.add_option('--chunk', type=int, help="generator cd", default=0)
 parser.add_option('--clf_model_path', type=str, help="clf model path", default="")
 
 def normalize_image(x):
@@ -43,8 +45,8 @@ def main(argv):
     max_iterations = config.hyperparameters['max_iterations']
 
     clf = VGG('VGG11', 4)
-    clf.cuda(opts.gpu)
     clf.load_state_dict(torch.load(opts.clf_model_path))
+    clf.cuda(opts.gpu)
     clf.eval()
 
 
@@ -53,10 +55,23 @@ def main(argv):
     #train_loader_c = get_data_loader(config.datasets['train_c'], batch_size, shuffle=False, num_workers=1)
     #train_loader_d = get_data_loader(config.datasets['train_d'], batch_size, shuffle=False, num_workers=1)
 
-    gen_ab = None
-    gen_cd = None
-    gen_ab = COCOResGen2(config.hyperparameters['gen_ab'])
-    gen_cd = COCOResGen2(config.hyperparameters['gen_cd'])
+    dirname = os.path.dirname(config.snapshot_prefix)
+
+    if opts.mode == "separate":
+        gen_ab = COCOResGen2(config.hyperparameters['gen_ab'])
+        gen_cd = COCOResGen2(config.hyperparameters['gen_cd'])
+
+        model_path = os.path.join(dirname, opts.gen_ab)
+        gen_ab.load_state_dict(torch.load(model_path))
+        model_path = os.path.join(dirname, opts.gen_cd)
+        gen_cd.load_state_dict(torch.load(model_path))
+        gen_ab.cuda(opts.gpu)
+        gen_cd.cuda(opts.gpu)
+    elif opts.mode == "joint":
+        gen_ab = COCOResGenSmallK4Way(config.hyperparameters['gen_ab']) 
+        model_path = os.path.join(dirname, opts.gen_ab)
+        gen_ab.load_state_dict(torch.load(model_path))
+        gen_ab.cuda(opts.gpu)
 
     '''
     exec('gen_ab = %s(config.hyperparameters[\'gen_ab\'])' %
@@ -65,19 +80,8 @@ def main(argv):
          config.hyperparameters['gen_cd']['name'])
     '''
 
-    #print("============ GENERATOR AB ==============")
-    #print(gen_ab)
-    #print("============ GENERATOR CD ==============")
-    #print(gen_cd)
-    dirname = os.path.dirname(config.snapshot_prefix)
-    model_path = os.path.join(dirname, opts.gen_ab)
-    gen_ab.load_state_dict(torch.load(model_path))
     print("Pre trained generator ab loaded")
-    model_path = os.path.join(dirname, opts.gen_cd)
-    gen_cd.load_state_dict(torch.load(model_path))
     print("Pre trained generator cd loaded")
-    gen_ab.cuda(opts.gpu)
-    gen_cd.cuda(opts.gpu)
     it = 0
     image_directory, snapshot_directory = prepare_snapshot_and_image_folder(config.snapshot_prefix, it, config.image_save_iterations)
     true_labels = torch.LongTensor(batch_size).cuda(opts.gpu)
@@ -95,6 +99,7 @@ def main(argv):
     #        continue
     correct_blond, correct_brunette, correct_brunette_smiling, correct_blond_smiling = 0, 0, 0, 0
     translations = []
+    to_smiling = []
     for it, (images_a, images_b) in enumerate(itertools.izip(train_loader_a, train_loader_b)):
         if it >= max_iterations:
             break
@@ -111,23 +116,34 @@ def main(argv):
         else:
             continue
 
+
         gen_ab.eval()
-        x_aa, x_ba, x_ab, x_bb, _ = gen_ab(images_a, images_b)        
+        if opts.mode == "joint":
+            x_ab, _ = gen_ab.forward_a2b(images_a)
+        else:
+            x_aa, x_ba, x_ab, x_bb, _ = gen_ab(images_a, images_b)        
         x_ab = normalize_image(x_ab)
         if classify_samples(x_ab, true_labels.fill_(1)) == 1:
             correct_brunette += 1
         else:
             continue
 
-        gen_cd.eval()        
-        x_ab_dc, _ = gen_cd.forward_b2a(x_ab)
+        if opts.mode == "joint":
+            x_ab_dc, _ = gen_ab.forward_d2c(x_ab)
+        else:
+            gen_cd.eval()        
+            x_ab_dc, _ = gen_cd.forward_b2a(x_ab)
+        to_smiling.append(torch.cat((images_a, x_ab, x_ab_dc), 3))
         x_ab_dc = normalize_image(x_ab_dc)
         if classify_samples(x_ab_dc, true_labels.fill_(3)) == 1:
             correct_brunette_smiling += 1
         else:
             continue
 
-        x_ab_dc_a, _ = gen_ab.forward_b2a(x_ab_dc)
+        if opts.mode == "joint":
+            x_ab_dc_a, _ = gen_ab.forward_b2a(x_ab_dc)
+        else:
+            x_ab_dc_a, _ = gen_ab.forward_b2a(x_ab_dc)
         x_ab_dc_a = normalize_image(x_ab_dc_a)
         if classify_samples(x_ab_dc_a, true_labels.fill_(2)) == 1:
             correct_blond_smiling += 1
@@ -136,28 +152,18 @@ def main(argv):
 
         translations.append(torch.cat((images_a, x_ab, x_ab_dc, x_ab_dc_a), 3))
     print("Total Images: %d \nBlonde: %d \nBrunette: %d \nSmiling_Brunette: %d \nSmiling_Blonde: %d"%(max_iterations, correct_blond, correct_brunette, correct_brunette_smiling, correct_blond_smiling)) 
+    if len(translations) == 0:
+        translations = to_smiling
     assembled_images = torch.cat(translations, 0)
     print(assembled_images.size())
 
-    torchvision.utils.save_image(
-        assembled_images.data / 2 + 0.5, 'sample.png', nrow=1)
-        # assembled_dbl_loop_images =  torch.cat((
-        #         images_a[0:1, ::], x_ab[0:1, ::], x_ab_cd[0:1, ::], x_ab_dc[0:1, ::],
-        #         images_b[0:1, ::], x_ba[0:1, ::], x_ba_cd[0:1, ::], x_ba_dc[0:1, ::],
-        #         images_c[0:1, ::], x_cd[0:1, ::], x_cd_ab[0:1, ::], x_cd_ba[0:1, ::],
-        #         images_d[0:1, ::], x_dc[0:1, ::], x_dc_ab[0:1, ::], x_dc_ba[0:1, ::]
-        #         ), 3)
-
-        # # save images
-        # if (it + 1) % config.image_save_iterations == 0:
-        #     img_filename = '%s/gen_%08d.jpg' % (
-        #         image_directory, it + 1)
-        #     dbl_img_filename = '%s/gen_dbl_%08d.jpg' % (
-        #         image_directory, it + 1)
-        #     torchvision.utils.save_image(
-        #         assembled_dbl_loop_images.data / 2 + 0.5, dbl_img_filename, nrow=2)
-        # if (it + 1) % 10 == 0:
-        #   print("Iteration: {}".format(it + 1))
+    if opts.chunk:
+        for _, sample in enumerate(assembled_images.chunk(10, 0)):
+            torchvision.utils.save_image(
+                sample.data / 2 + 0.5, 'sample_%d.png'%_, nrow=1)
+    else: 
+        torchvision.utils.save_image(
+            assembled_images.data / 2 + 0.5, 'sample.png', nrow=1)
 
 if __name__ == '__main__':
     main(sys.argv)
