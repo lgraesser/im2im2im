@@ -1,4 +1,4 @@
-# Composable
+# Composable Unpaired Image to Image Translation
 
 ### Summary
 Learning to translate between two image domains is a common problem in computer vision and graphics, and has many potentially useful applications including colorization [1], photo generation from sketches [1], inpainting [2], future frame prediction [3], superresolution [4], style transfer [5], and dataset augmentation. It can be particularly useful when images from one of the two domains are scarce or expensive to obtain (for example by requiring human annotation or modification).
@@ -8,6 +8,8 @@ This paper extends the idea of unpaired image to image translation by exploring 
 ### Usage
 
 To train translation pairs separately, and to resume training. See the original instructions [here](nvidia_original/USAGE.md)
+
+All the commands below should be run from within the ```nvidia_original/src``` directory.
 
 To train a joint model (learning two pairs of distributions at the same time):
 ```bash
@@ -25,6 +27,10 @@ To generate double translated images with a joint trained model:
 ```bash
 python generate_images.py --config ../exps/unit/four_way_generate.yaml --gen /path/to/generator --dis /path/to/discriminator
 ```
+### Model
+
+
+
 ### Results
 
 
