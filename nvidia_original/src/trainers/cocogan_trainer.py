@@ -480,7 +480,7 @@ class COCOGANTrainer4Way(nn.Module):
 class COCOGANTrainer4WayLrTweak(COCOGANTrainer4Way):
 
     def __init__(self, hyperparameters):
-        super(COCOGANTrainer4Way, self).__init__(hyperparameters)
+        super(COCOGANTrainer4WayLrTweak, self).__init__(hyperparameters)
 
     def gen_update(self, images_a, images_b, images_c, images_d, hyperparameters):
         self.gen.zero_grad()

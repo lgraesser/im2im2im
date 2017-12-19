@@ -9,6 +9,7 @@ from tensorboard import summary
 
 def get_data_loader(conf, batch_size, shuffle=True, num_workers=10):
   dataset = []
+  print("Shuffle: {}, num workers: {}".format(shuffle, num_workers))
   print("dataset=%s(conf)" % conf['class_name'])
   exec ("dataset=%s(conf)" % conf['class_name'])
   return torch.utils.data.DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)

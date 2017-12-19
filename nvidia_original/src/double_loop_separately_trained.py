@@ -19,6 +19,7 @@ from common import *
 import tensorboard
 from tensorboard import summary
 from optparse import OptionParser
+
 parser = OptionParser()
 parser.add_option('--gpu', type=int, help="gpu id", default=0)
 parser.add_option('--config', type=str, help="net configuration")
