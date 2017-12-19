@@ -9,6 +9,8 @@ This paper extends the idea of unpaired image to image translation by exploring 
 
 To train translation pairs separately, and to resume training. See the original instructions [here](nvidia_original/USAGE.md)
 
+The images of people were selected from the celebA [6] dataset.
+
 All the commands below should be run from within the ```nvidia_original/src``` directory.
 
 To train a joint model (learning two pairs of distributions at the same time):
@@ -29,7 +31,7 @@ python generate_images.py --config ../exps/unit/four_way_generate.yaml --gen /pa
 ```
 ### Model
 
-
+![model](im2im2im.png)
 
 ### Results
 
@@ -46,3 +48,4 @@ We are grateful to M. Liu, T. Breuel, and J. Kautz for making their research and
 3.  Y. Zhou and T. L. Berg, “Learning temporal transformations from time-lapse videos,” inCom-puter Vision - ECCV 2016 - 14th European Conference, Amsterdam, The Netherlands, October11-14, 2016, Proceedings, Part VIII, pp. 262–277, 2016.
 4.  C. Ledig,  L. Theis,  F. Huszar,  J. Caballero,  A. P. Aitken,  A. Tejani,  J. Totz,  Z. Wang,  andW. Shi, “Photo-realistic single image super-resolution using a generative adversarial network,”CoRR, vol. abs/1609.04802, 2016.
 5.  C. Li and M. Wand, “Precomputed real-time texture synthesis with markovian generative ad-versarial networks,” inComputer Vision - ECCV 2016 - 14th European Conference, Amster-dam, The Netherlands, October 11-14, 2016, Proceedings, Part III, pp. 702–716, 2016.
+6. Z. Liu, P. Luo, X. Wang, and X. Tang, “Deep learning face attributes in the wild,” inProceed-ings of International Conference on Computer Vision (ICCV), 2015.
