@@ -76,3 +76,8 @@ def write_loss(iterations, max_iterations, trainer, train_writer):
              if not callable(getattr(trainer, attr)) and not attr.startswith("__") and 'acc' in attr]
   for m in members:
     train_writer.add_summary(summary.scalar(m, getattr(trainer, m)), iterations + 1)
+
+  members = [attr for attr in dir(trainer) \
+             if not callable(getattr(trainer, attr)) and not attr.startswith("__") and '_norm' in attr]
+  for m in members:
+    train_writer.add_summary(summary.scalar(m, getattr(trainer, m)), iterations + 1)
