@@ -35,3 +35,9 @@
 ### To do
   - Test the models on the validation dataset
   - Check the detailed losses in the log files
+
+### How to evaluate
+  - Classifier should still be able to tell which celebrity
+  - Entropy of the distribution shouldn't change that much
+  - Inception score on categories (train classifiers on clean images)
+  - Identity and class
