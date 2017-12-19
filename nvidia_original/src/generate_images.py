@@ -43,9 +43,9 @@ def main(argv):
 
     trainer = []
     exec ("trainer=%s(config.hyperparameters)" % config.hyperparameters['trainer'])
-    print("============ GENERATOR AB ==============")
+    print("============ GENERATOR ==============")
     print(trainer.gen)
-    print("============ GENERATOR CD ==============")
+    print("============ DISCRIMINATOR ==============")
     print(trainer.dis)
     dirname = os.path.dirname(config.snapshot_prefix)
     model_path = os.path.join(dirname, opts.gen)
