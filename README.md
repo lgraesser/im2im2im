@@ -9,8 +9,6 @@ This paper extends the idea of unpaired image to image translation by exploring 
 
 To train translation pairs separately, and to resume training. See the original instructions [here](nvidia_original/USAGE.md)
 
-The images of people were selected from the celebA [6] dataset.
-
 All the commands below should be run from within the ```nvidia_original/src``` directory.
 
 To train a joint model (learning two pairs of distributions at the same time):
@@ -32,6 +30,8 @@ python generate_images.py --config ../exps/unit/four_way_generate.yaml --gen /pa
 ### Model
 
 ![model](im2im2im.png)
+
+The images of people were selected from the celebA [6] dataset.
 
 ### Results
 
