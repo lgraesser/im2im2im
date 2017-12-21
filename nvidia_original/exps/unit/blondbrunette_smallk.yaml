@@ -5,7 +5,7 @@ train:
   image_save_iterations: 1000 # How often do you want to save output images during training
   image_display_iterations: 1000
   display: 5 # How often do you want to log the training stats
-  snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/blbr_smallk/results # Where do you want to save the outputs
+  snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/blbr_smallk_big/results # Where do you want to save the outputs
   hyperparameters:
     trainer: COCOGANTrainer
     lr: 0.0001             # learning rate
@@ -38,16 +38,16 @@ train:
     train_a: # Domain 1 dataset
       channels: 3       # image channel number
       scale: 1.0        # scaling factor for scaling image before processing
-      crop_image_size: 64 # crop image size
+      crop_image_size: 128 # crop image size
       class_name: dataset_celeba           # dataset class name
       root: /misc/vlgscratch2/LecunGroup/laura/datasets/celeba/    # dataset folder location
-      folder: img_align_64/
+      folder: img_align_128/
       list_name: lists/blond_no_eye_20k.txt
     train_b: # Domain 2 dataset
       channels: 3       # image channel number
       scale: 1.0        # scaling factor for scaling image before processing
-      crop_image_size: 64 # crop image size
+      crop_image_size: 128 # crop image size
       class_name: dataset_celeba           # dataset class name
       root: /misc/vlgscratch2/LecunGroup/laura/datasets/celeba/    # dataset folder location
-      folder: img_align_64/
+      folder: img_align_128/
       list_name: lists/brunette_no_eye_20k.txt

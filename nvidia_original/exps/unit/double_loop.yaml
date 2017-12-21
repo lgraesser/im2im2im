@@ -1,9 +1,8 @@
 # Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
 # Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
 train:
-  #snapshot_prefix: /scratch/ag4508/unit/exps/smiling_blondbrunette_dbl/smiling_blondbrunette_dbl # Where do you want to save the outputs
-  snapshot_prefix: /scratch/ag4508/unit/exps/smiling_eyeglass_dbl/smiling_eyeglass_dbl # Where do you want to save the outputs
-  image_save_iterations: 10
+  snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/double_loop/results # Where do you want to save the outputs
+  image_save_iterations: 1
   hyperparameters:
     batch_size: 1
     gen_ab:

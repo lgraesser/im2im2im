@@ -17,6 +17,7 @@ import torchvision
 import itertools
 from common import *
 from optparse import OptionParser
+
 parser = OptionParser()
 parser.add_option('--gpu', type=int, help="gpu id", default=0)
 parser.add_option('--config', type=str, help="net configuration")
@@ -42,9 +43,9 @@ def main(argv):
 
     trainer = []
     exec ("trainer=%s(config.hyperparameters)" % config.hyperparameters['trainer'])
-    print("============ GENERATOR AB ==============")
+    print("============ GENERATOR ==============")
     print(trainer.gen)
-    print("============ GENERATOR CD ==============")
+    print("============ DISCRIMINATOR ==============")
     print(trainer.dis)
     dirname = os.path.dirname(config.snapshot_prefix)
     model_path = os.path.join(dirname, opts.gen)

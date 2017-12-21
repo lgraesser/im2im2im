@@ -2,7 +2,7 @@
 # Licensed under the CC BY-NC-ND 4.0 license (https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode).
 train:
   snapshot_prefix: /misc/vlgscratch2/LecunGroup/laura/im2im/results/four_way_generate/results # Where do you want to save the outputs
-  image_save_iterations: 10
+  image_save_iterations: 1
   hyperparameters:
     trainer: COCOGANTrainer4Way
     lr: 0.0001             # learning rate
