@@ -1,7 +1,7 @@
 # Composable Unpaired Image to Image Translation
 
 ### Summary
-There has been remarkable recent work in unpaired image-to-image translation.However, they’re restricted to translation on a single pair of distributions, with some exceptions. In this study, we extend one of these works to a scalable multi-distribution translation mechanism. Our translation models not only converts from one distribution to another but can be stacked to create composite translation functions. We show that this composite property makes it possible to generate images not seen in the training set. We also propose a decoupled training mechanism to train multiple distributions separately, which we show, generates better samples  than isolated joint training. Further, we do a qualitative and quantitative analysis to assess the plausibility of the samples.
+There has been remarkable recent work in unpaired image-to-image translation. However, they're restricted to translation on a single pair of distributions, with some exceptions. In this study, we extend one of these works to a scalable multi-distribution translation mechanism. Our translation models not only converts from one distribution to another but can be stacked to create composite translation functions. We show that this composite property makes it possible to generate images not seen in the training set. We also propose a decoupled training mechanism to train multiple distributions separately, which we show, generates better samples than isolated joint training. Further, we do a qualitative and quantitative analysis to assess the plausibility of the samples.
 
 ### Usage
 
