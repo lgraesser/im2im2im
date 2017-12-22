@@ -35,7 +35,7 @@ The images of people were selected from the celebA [6] dataset.
 
 ### Results
 
-
+![results1](eye_smile.png)
 
 ### Acknowledgements
 
