@@ -26,22 +26,22 @@ class dataset_celeba(data.Dataset):
       else:
         self.images = [os.path.join(self.root, self.folder, x.strip().split(' ')[0]) for x in content]
 
-    #np.random.shuffle(self.images)
+    np.random.shuffle(self.images)
     self.dataset_size = len(self.images)
 
-  def __getitem__(self, index):    
+  def __getitem__(self, index):
     if isinstance(self.images[index], tuple):
       ### NOTE using 64_crop folder, so changeing filename
       img_file = self.images[index][0]
       label = self.images[index][1]
-    else: 
+    else:
       img_file = self.images[index]
     crop_img = self._load_one_image(img_file)
     raw_data = crop_img.transpose((2, 0, 1))  # convert to HWC
     data = ((torch.FloatTensor(raw_data)/255.0)-0.5)*2
 
     if isinstance(self.images[index], tuple):
-      data = (data, label)      
+      data = (data, label)
     return data
 
   def _load_one_image(self, img_name, test=False):
