@@ -37,6 +37,8 @@ The images of people were selected from the celebA [6] dataset.
 
 ![results1](eye_smile.png)
 
+![results1](hair_smile.png)
+
 ### Acknowledgements
 
 We are grateful to M. Liu, T. Breuel, and J. Kautz for making their research and codebase publicly available, without which this project would not have been possible, and to Professor Rob Fergus for his valuable advice.
