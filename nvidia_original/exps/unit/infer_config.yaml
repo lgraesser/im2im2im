@@ -5,7 +5,7 @@ train:
   image_save_iterations: 10
   hyperparameters:
     batch_size: 1
-    max_iterations: 500 # maximum number of training epochs
+    max_iterations: 100 # maximum number of training epochs
     gen_ab:
       name: COCOResGen2
       ch: 64               # base channel number per layer
